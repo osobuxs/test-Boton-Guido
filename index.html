@@ -77,7 +77,7 @@
 <body>
 <header>
   <h1>HiChat - Integrations Tester</h1>
-  <p>Bearer (Swagger) + Embedded Signup (code/token) + Exchange (sin backend) + POST /integrations (WhatsApp y Meta)</p>
+  <p>Bearer (Swagger) + Embedded Signup (code) + Exchange (BACKEND) + POST /integrations (WhatsApp y Meta)</p>
 </header>
 
 <main>
@@ -89,10 +89,13 @@
       </div>
 
       <div class="danger">
-        <b>Importante (sin backend):</b> el “code exchange” oficial usa <b>app secret</b> y muchas veces <b>no se puede</b> hacer desde el navegador por CORS.
-        <br/>Por eso hay 2 modos:
-        <br/>• <b>Modo A (recomendado)</b>: usar <b>authResponse.accessToken</b> que devuelve el SDK (si viene).
-        <br/>• <b>Modo B</b>: intercambiar <b>code → access_token</b> llamando a Graph OAuth directo (requiere secret; puede fallar por CORS).
+        <b>Importante:</b> se elimina el “Modo A”. Siempre se usa <b>Método B</b>:
+        <br/>• Obtener <b>code</b> con Embedded Signup
+        <br/>• Intercambiar <b>code → access_token</b> llamando a tu backend:
+        <div class="small" style="margin-top:8px;">
+          POST <b>http://localhost:4032/hi-WhatsApp-Api-test/meta/oauth/exchange-code</b>
+          <br/>Body JSON: <code>{ "code": "..." }</code>
+        </div>
         <div class="small" style="margin-top:8px;">
           Todo lo que se guarda en localStorage (tokens) es sensible. Usalo solo local/dev.
         </div>
@@ -127,31 +130,14 @@
 
       <div class="row2">
         <div>
-          <label>Modo para obtener access_token (sin backend)</label>
-          <select id="exchangeMode">
-            <option value="sdk_token">A) Usar authResponse.accessToken (SDK) si viene</option>
-            <option value="graph_oauth">B) Exchange code → token vía Graph OAuth (requiere App Secret)</option>
-          </select>
+          <label>Endpoint BACKEND para exchange code → token</label>
+          <input id="exchangeUrl" value="http://localhost:4032/hi-WhatsApp-Api-test/meta/oauth/exchange-code" />
         </div>
         <div>
           <label>¿Auto “obtener token” al recibir code?</label>
           <select id="autoExchange">
             <option value="true">Sí</option>
             <option value="false">No</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row2">
-        <div>
-          <label>App Secret (solo si usás Modo B)</label>
-          <input id="appSecret" type="password" placeholder="NO recomendado en producción" />
-        </div>
-        <div>
-          <label>Guardar App Secret en localStorage (MUY inseguro)</label>
-          <select id="storeSecret">
-            <option value="false">No</option>
-            <option value="true">Sí (solo local)</option>
           </select>
         </div>
       </div>
@@ -219,7 +205,7 @@
         <button class="primary" id="btnLoginWa" type="button">Login Embedded Signup (WhatsApp)</button>
         <button class="primary" id="btnLoginMeta" type="button">Login Embedded Signup (Meta FB/IG)</button>
         <button class="warn" id="btnLogout" type="button">FB.logout()</button>
-        <button class="ok" id="btnExchangeNow" type="button">Obtener token (según modo)</button>
+        <button class="ok" id="btnExchangeNow" type="button">Obtener token (BACKEND)</button>
       </div>
 
       <div class="row2">
@@ -337,7 +323,7 @@
           <span id="lastDot" class="statusDot"></span>
           <span>Último resultado:</span> <b id="lastStatus">—</b>
         </div>
-        <pre id="resultPre">{ "tip": "Probá PING. Luego Login → (auto)Token → Create" }</pre>
+        <pre id="resultPre">{ "tip": "Probá PING. Luego Login → (auto)Token(BACKEND) → Create" }</pre>
       </div>
       <div>
         <div class="pill" style="margin-bottom:10px;">
@@ -365,7 +351,6 @@ document.addEventListener("DOMContentLoaded", function () {
     catch (e) { return String(x); }
   };
 
-  // helper: primer valor != null/undefined
   function firstNotNull() {
     for (var i = 0; i < arguments.length; i++) {
       if (arguments[i] !== undefined && arguments[i] !== null) return arguments[i];
@@ -466,11 +451,8 @@ document.addEventListener("DOMContentLoaded", function () {
       igBase: $("igBase").value.trim().replace(/\/$/, ""),
       waCreatePath: $("waCreatePath").value.trim(),
       metaCreatePath: $("metaCreatePath").value.trim(),
+      exchangeUrl: $("exchangeUrl").value.trim(),
       autoExchange: $("autoExchange").value === "true",
-
-      exchangeMode: $("exchangeMode").value,
-      appSecret: $("appSecret").value.trim(),
-      storeSecret: $("storeSecret").value === "true",
 
       appId: $("appId").value.trim(),
       graphVersion: $("graphVersion").value.trim(),
@@ -485,7 +467,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var cfg = getCfg();
     var toSave = {};
     for (var k in cfg) toSave[k] = cfg[k];
-    if (!cfg.storeSecret) delete toSave.appSecret;
 
     localStorage.setItem(CFG_KEY, JSON.stringify(toSave));
     log("✅ Config guardada", toSave);
@@ -503,11 +484,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cfg.waCreatePath) $("waCreatePath").value = cfg.waCreatePath;
       if (cfg.metaCreatePath) $("metaCreatePath").value = cfg.metaCreatePath;
 
+      if (cfg.exchangeUrl) $("exchangeUrl").value = cfg.exchangeUrl;
       if (typeof cfg.autoExchange === "boolean") $("autoExchange").value = String(cfg.autoExchange);
-
-      if (cfg.exchangeMode) $("exchangeMode").value = cfg.exchangeMode;
-      if (typeof cfg.storeSecret === "boolean") $("storeSecret").value = String(cfg.storeSecret);
-      if (cfg.appSecret) $("appSecret").value = cfg.appSecret;
 
       if (cfg.appId) $("appId").value = cfg.appId;
       if (cfg.graphVersion) $("graphVersion").value = cfg.graphVersion;
@@ -585,7 +563,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  var obtainTokenNoBackend = async function () {
+  // ✅ ÚNICO MÉTODO (B): POST al backend exchangeUrl con body { code }
+  var obtainTokenViaBackend = async function () {
     var cfg = getCfg();
 
     if (state.accessToken) {
@@ -595,70 +574,43 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    if (cfg.exchangeMode === "sdk_token") {
-      if (typeof FB === "undefined") {
-        setLast("FB SDK NO DISPONIBLE", { tip: "SDK no cargó" }, false);
-        return;
-      }
-
-      FB.getLoginStatus(function (resp) {
-        log("FB.getLoginStatus (obtainToken)", resp);
-
-        var ar = (resp && resp.authResponse) ? resp.authResponse : null;
-        var token = (ar && ar.accessToken) ? ar.accessToken : null;
-        var expiresIn = (ar && ar.expiresIn !== undefined && ar.expiresIn !== null) ? ar.expiresIn : null;
-
-        if (token) {
-          setTokenEverywhere(token, { expiresIn: expiresIn, obtainedAt: now(), source: "sdk_getLoginStatus" });
-        } else {
-          setLast("SDK NO DIO accessToken", {
-            tip: "Probá Login de nuevo. Si Embedded Signup no retorna token, pasate a Modo B (Graph OAuth) o armá backend exchange.",
-            resp: resp
-          }, false);
-        }
-      });
-
+    if (!state.code) {
+      setLast("FALTA CODE", { tip: "Primero Login Embedded Signup para obtener code" }, false);
       return;
     }
 
-    if (cfg.exchangeMode === "graph_oauth") {
-      if (!state.code) {
-        setLast("FALTA CODE", { tip: "Primero Login Embedded Signup para obtener code" }, false);
-        return;
-      }
-      if (!cfg.appSecret) {
-        setLast("FALTA APP SECRET", { tip: "Para Modo B necesitás pegar app secret (solo local/dev)" }, false);
-        return;
-      }
-
-      var url =
-        "https://graph.facebook.com/" + encodeURIComponent(cfg.graphVersion) + "/oauth/access_token" +
-        "?client_id=" + encodeURIComponent(cfg.appId) +
-        "&redirect_uri=" + encodeURIComponent(cfg.redirectUri) +
-        "&client_secret=" + encodeURIComponent(cfg.appSecret) +
-        "&code=" + encodeURIComponent(state.code);
-
-      try {
-        var json = await fetchJson(url, { method: "GET" });
-        var token2 = json.access_token || json.meta_access_token || json.token || null;
-        var expiresIn2 = (json.expires_in !== undefined && json.expires_in !== null) ? json.expires_in : null;
-
-        if (token2) {
-          setTokenEverywhere(token2, { expiresIn: expiresIn2, obtainedAt: now(), source: "graph_oauth_exchange", raw: json });
-        } else {
-          setLast("EXCHANGE OK pero sin access_token", json, false);
-        }
-      } catch (e) {
-        setLast("EXCHANGE FALLÓ (posible CORS)", {
-          tip: "Si esto es CORS/Failed to fetch, NO se puede desde el navegador: necesitás backend/proxy para el exchange.",
-          error: e
-        }, false);
-        log("❌ Exchange Graph OAuth falló", e);
-      }
+    if (!cfg.exchangeUrl) {
+      setLast("FALTA exchangeUrl", { tip: "Configurá el endpoint backend para exchange" }, false);
       return;
     }
 
-    setLast("MODO DESCONOCIDO", { exchangeMode: cfg.exchangeMode }, false);
+    try {
+      // DTO: { code: string }
+      var json = await fetchJson(cfg.exchangeUrl, { method: "POST", body: { code: state.code } });
+
+      // tolerante a nombres posibles de respuesta
+      var token =
+        json.access_token ||
+        json.accessToken ||
+        (json.data && (json.data.access_token || json.data.accessToken)) ||
+        null;
+
+      var expiresIn =
+        (json.expires_in !== undefined && json.expires_in !== null) ? json.expires_in :
+        (json.expiresIn !== undefined && json.expiresIn !== null) ? json.expiresIn :
+        (json.data && json.data.expires_in !== undefined) ? json.data.expires_in :
+        (json.data && json.data.expiresIn !== undefined) ? json.data.expiresIn :
+        null;
+
+      if (token) {
+        setTokenEverywhere(token, { expiresIn: expiresIn, obtainedAt: now(), source: "backend_exchange", raw: json });
+      } else {
+        setLast("EXCHANGE OK pero sin access_token", json, false);
+      }
+    } catch (e) {
+      setLast("EXCHANGE BACKEND FALLÓ", { error: e, exchangeUrl: cfg.exchangeUrl }, false);
+      log("❌ Exchange backend falló", e);
+    }
   };
 
   var launchEmbedded = function (opts) {
@@ -682,33 +634,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var ar = response.authResponse;
       var code = ar.code ? ar.code : null;
-      var token = ar.accessToken ? ar.accessToken : null;
-      var expiresIn = (ar.expiresIn !== undefined && ar.expiresIn !== null) ? ar.expiresIn : null;
+
+      // ✅ ya NO usamos accessToken del SDK (método A eliminado)
+      state.accessToken = null;
+      state.expiresIn = null;
+      state.obtainedAt = null;
 
       if (code) state.code = code;
-      if (token) {
-        setTokenEverywhere(token, { expiresIn: expiresIn, obtainedAt: now(), source: "sdk_login_authResponse" });
-      }
 
       refreshKVs();
       saveAuth();
 
-      if (!code && !token) {
-        setLast("LOGIN SIN CODE NI TOKEN", {
-          tip: "Revisá config_id / response_type. Por ahora pedimos code, y además leemos token si aparece.",
+      if (!code) {
+        setLast("LOGIN SIN CODE", {
+          tip: "Revisá config_id / response_type. Se espera 'code'.",
           response: response
         }, false);
         return;
       }
 
-      setLast("LOGIN OK", { kind: kind, code: code, accessToken: token ? "(capturado)" : null, expiresIn: expiresIn }, true);
+      setLast("LOGIN OK", { kind: kind, code: code }, true);
 
       if (cfg.autoExchange) {
-        if (state.accessToken) {
-          log("ℹ️ Auto-token: ya había access_token del SDK, no se hace exchange");
-          return;
-        }
-        obtainTokenNoBackend().catch(function (e) { log("❌ Auto-obtainToken falló", e); });
+        obtainTokenViaBackend().catch(function (e) { log("❌ Auto-obtainToken (backend) falló", e); });
       }
     }, {
       config_id: config_id,
@@ -777,7 +725,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   wire("btnExchangeNow", function () {
-    obtainTokenNoBackend().catch(function (e) { log("❌ Obtener token error", e); });
+    obtainTokenViaBackend().catch(function (e) { log("❌ Obtener token (backend) error", e); });
   });
 
   wire("btnFillMetaFromExchange", function () {
