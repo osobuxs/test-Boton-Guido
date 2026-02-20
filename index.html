@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var config_id = (kind === "whatsapp") ? cfg.configIdWa : cfg.configIdMeta;
     log("➡️ FB.login()", { kind: kind, config_id: config_id, scopes: cfg.scopes, response_type: "code" });
-
+    log("🧷 OAuth dialog redirect_uri (cfg.redirectUri)", { redirect_uri: cfg.redirectUri });
     FB.login(function (response) {
       log("FB.login response (" + kind + ")", response);
 
