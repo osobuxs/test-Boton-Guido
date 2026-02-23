@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>POC WhatsApp - Índice</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#111a33; --muted:#8ea0c8; --text:#eaf0ff;
+      --blue:#1877f2; --border: rgba(255,255,255,.10);
+      --ok:#1ee3a8; --warn:#ffcc66;
+    }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:980px; margin:0 auto; padding:18px; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; }
+    h1{ margin:0 0 6px; font-size:18px; }
+    p{ margin:0 0 14px; color:var(--muted); font-size:13px; line-height:1.4; }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .tile{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius:12px;
+      padding:12px;
+    }
+    .tile h2{ margin:0 0 6px; font-size:14px; }
+    .tile .desc{ color:var(--muted); font-size:12px; margin-bottom:10px; }
+    a.btn{
+      display:inline-block;
+      text-decoration:none;
+      background: var(--blue);
+      color:white;
+      font-weight:800;
+      padding:10px 12px;
+      border-radius:10px;
+    }
+    a.btn.secondary{
+      background: rgba(255,255,255,.10);
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+    code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--warn); display:inline-block; }
+    .dot.ok{ background:var(--ok); }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    input{
+      width:100%;
+      box-sizing:border-box;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      padding:10px;
+      outline:none;
+    }
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>POC WhatsApp Embedded Signup — Índice</h1>
+      <p>
+        Página simple para navegar a las pantallas del POC.
+        <br/>
+        Recomendación: servilo por <code>http(s)</code> (Vercel / Live Server), no como <code>file://</code>.
+      </p>
+
+      <div class="grid">
+        <div class="tile">
+          <h2>1) Pantalla principal (POC)</h2>
+          <div class="desc">
+            Botón “Conectar WhatsApp” → abre popup → recibe token via <code>postMessage</code> → permite guardar integración.
+          </div>
+          <div class="row">
+            <a class="btn" href="./wa-poc.html">Abrir wa-poc.html</a>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h2>2) Bridge (popup retorno)</h2>
+          <div class="desc">
+            La abre el backend al final del callback. Consulta <code>/meta/oauth/poll</code>, hace <code>postMessage</code> al opener y cierra.
+            <br/>
+            (No la abras “a mano” salvo para debug)
+          </div>
+          <div class="row">
+            <a class="btn secondary" href="./wa-bridge.html?state=DEBUG_STATE&return_to=%2Fwa-poc.html">Abrir wa-bridge.html (debug)</a>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h2>3) Links backend (debug rápido)</h2>
+          <div class="desc">
+            Endpoints útiles para probar el flujo desde el navegador.
+          </div>
+
+          <label>API Base (solo informativo)</label>
+          <input id="apiBase" value="https://11jx77f9-4032.brs.devtunnels.ms/hi-WhatsApp-Api-test" />
+
+          <div class="row" style="margin-top:10px;">
+            <a class="btn secondary" id="cfgLink" href="#">Abrir /backoffice/whatsapp/signup/config</a>
+            <a class="btn secondary" id="pollLink" href="#">Abrir /meta/oauth/poll?state=...</a>
+          </div>
+
+          <div class="pill">
+            <span class="dot ok"></span>
+            <span>Tip:</span>
+            <span>primero pedí <code>config</code> para obtener un <code>state</code>, después probás <code>poll</code>.</span>
+          </div>
+        </div>
+
+        <div class="tile">
+          <h2>4) Checklist</h2>
+          <div class="desc">
+            Si algo falla:
+            <ul style="margin:8px 0 0; padding-left:18px; color:#8ea0c8; font-size:12px; line-height:1.45;">
+              <li>Popups habilitados</li>
+              <li><code>META_REDIRECT_URI</code> == callback real del backend</li>
+              <li>El dialog usa <code>redirect_uri</code> igual al callback</li>
+              <li>El exchange usa el mismo <code>redirect_uri</code></li>
+              <li>App Domains / Valid OAuth Redirect URIs bien</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top:14px;">
+        Si querés, después lo dejo más minimal todavía (un solo botón y un logcito).
+      </p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  function cleanBase(x){
+    return (x || "").trim().replace(/\/$/, "");
+  }
+
+  function buildLinks(){
+    const base = cleanBase($("apiBase").value);
+    const cfg = base + "/backoffice/whatsapp/signup/config?return_to=" + encodeURIComponent("/wa-poc.html");
+    $("cfgLink").href = cfg;
+
+    // poll requiere state real; dejamos placeholder
+    const poll = base + "/meta/oauth/poll?state=" + encodeURIComponent("PEGAR_STATE_ACA");
+    $("pollLink").href = poll;
+  }
+
+  $("apiBase").addEventListener("input", buildLinks);
+  buildLinks();
+})();
+</script>
+</body>
+</html>
