@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>WA Bridge</title>
+</head>
+<body style="font-family:system-ui;padding:16px">
+  <h3>Conectando WhatsApp…</h3>
+  <pre id="out" style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:8px"></pre>
+
+<script>
+(async function(){
+  const out = document.getElementById("out");
+  const log = (x)=> out.textContent += (out.textContent ? "\n" : "") + x;
+
+  const params = new URLSearchParams(location.search);
+  const state = params.get("state");
+  const returnTo = params.get("return_to") || "/wa-poc.html";
+
+  // ✅ PONÉ TU API BASE real (mismo que en wa-poc.html)
+  const apiBase = "https://11jx77f9-4032.brs.devtunnels.ms/hi-WhatsApp-Api-test";
+
+  if(!state){
+    log("Falta state");
+    location.href = returnTo;
+    return;
+  }
+
+  const pollUrl = apiBase + "/meta/oauth/poll?state=" + encodeURIComponent(state);
+  log("state=" + state);
+  log("pollUrl=" + pollUrl);
+
+  try{
+    const r = await fetch(pollUrl);
+    const j = await r.json();
+
+    if(!j.ready || !j.result){
+      log("Aún no está listo. Reintentando…");
+      setTimeout(()=>location.reload(), 700);
+      return;
+    }
+
+    const payload = {
+      type: "HICHAT_WA_OAUTH_RESULT",
+      state,
+      ok: !!j.result.access_token && !j.result.error,
+      result: j.result
+    };
+
+    if(window.opener && !window.opener.closed){
+      window.opener.postMessage(payload, "*");
+      log("Enviado a opener. Cerrando popup…");
+      setTimeout(()=>window.close(), 250);
+      return;
+    }
+
+    log("No hay opener. Volviendo a return_to…");
+    setTimeout(()=>location.href = returnTo, 400);
+  } catch(e){
+    log("Error: " + (e?.message || String(e)));
+    setTimeout(()=>location.href = returnTo, 800);
+  }
+})();
+</script>
+</body>
+</html>
