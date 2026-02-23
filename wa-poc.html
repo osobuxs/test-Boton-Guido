@@ -1,23 +1,84 @@
 <!doctype html>
 <html lang="es">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>POC WhatsApp Embedded Signup</title>
   <style>
-    body{font-family:system-ui;margin:0;padding:18px;background:#0b1020;color:#eaf0ff}
-    .card{max-width:920px;background:#111a33;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    label{display:block;font-size:12px;color:#8ea0c8;margin:8px 0 6px}
-    input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#eaf0ff;padding:10px}
-    button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;background:#1877f2;color:#fff;font-weight:800}
-    button.secondary{background:rgba(255,255,255,.12)}
-    pre{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;overflow:auto}
-    .ok{color:#1ee3a8;font-weight:800}
-    .bad{color:#ff5c7a;font-weight:800}
-    .muted{color:#8ea0c8}
+    body {
+      font-family: system-ui;
+      margin: 0;
+      padding: 18px;
+      background: #0b1020;
+      color: #eaf0ff
+    }
+
+    .card {
+      max-width: 920px;
+      background: #111a33;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 14px
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #8ea0c8;
+      margin: 8px 0 6px
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .03);
+      color: #eaf0ff;
+      padding: 10px
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      background: #1877f2;
+      color: #fff;
+      font-weight: 800
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, .12)
+    }
+
+    pre {
+      background: rgba(0, 0, 0, .25);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 12px;
+      padding: 12px;
+      overflow: auto
+    }
+
+    .muted {
+      color: #8ea0c8
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid rgba(255, 255, 255, .12);
+      margin: 14px 0
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h2>POC - Conectar WhatsApp (Embedded Signup)</h2>
@@ -39,7 +100,7 @@
       <button class="secondary" id="btnClear">Borrar localStorage</button>
     </div>
 
-    <hr style="border:0;border-top:1px solid rgba(255,255,255,.12);margin:14px 0">
+    <hr>
 
     <h3>Datos para guardar integración</h3>
     <div class="row">
@@ -81,171 +142,224 @@
     <pre id="log"></pre>
   </div>
 
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-  const LS_KEY = "wa_poc_auth";
-  const LOG = (msg, obj)=>{
-    const line = `[${new Date().toISOString()}] ${msg}` + (obj ? "\n" + JSON.stringify(obj,null,2) : "");
-    $("log").textContent += ($("log").textContent ? "\n\n" : "") + line;
-  };
-  const setStatus = (text, ok=null)=>{
-    $("status").value = text;
-    $("status").style.color = ok===true ? "#1ee3a8" : ok===false ? "#ff5c7a" : "#eaf0ff";
-  };
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const LS_KEY = "wa_poc_auth";
 
-  function openCenteredPopup(url, w, h){
-    const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
-    const dualScreenTop  = window.screenTop  !== undefined ? window.screenTop  : window.screenY;
-    const width  = window.innerWidth  ? window.innerWidth  : document.documentElement.clientWidth;
-    const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
-    const left = ((width / 2) - (w / 2)) + dualScreenLeft;
-    const top  = ((height / 2) - (h / 2)) + dualScreenTop;
-    const features = `scrollbars=yes,width=${w},height=${h},top=${top},left=${left}`;
-    return window.open(url, "wa_meta_oauth", features);
-  }
-
-  // ✅ Recibe del bridge
-  window.addEventListener("message", (event)=>{
-    const data = event.data;
-    if(!data || data.type !== "HICHAT_WA_OAUTH_RESULT") return;
-
-    LOG("📩 postMessage recibido", data);
-
-    if(!data.ok){
-      setStatus("❌ OAuth falló", false);
-      return;
-    }
-
-    const result = data.result || {};
-    const token = result.access_token;
-    if(token){
-      localStorage.setItem(LS_KEY, JSON.stringify({ state: data.state, result }));
-      $("wsp_token").value = token;
-      setStatus("✅ Conectado (token recibido)", true);
-    } else {
-      setStatus("⚠️ Volvió pero sin token", false);
-    }
-  });
-
-  async function getConfig(){
-    const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
-    const url = apiBase + "/backoffice/whatsapp/signup/config?return_to=" + encodeURIComponent("/wa-poc.html");
-    LOG("➡️ GET config", { url });
-    const r = await fetch(url);
-    const j = await r.json();
-    LOG("✅ config", j);
-    return j;
-  }
-
-  function buildDialogUrl(cfg){
-    const dialog = new URL(`https://www.facebook.com/${cfg.graph_version}/dialog/oauth`);
-    dialog.searchParams.set("client_id", cfg.app_id);
-    dialog.searchParams.set("redirect_uri", cfg.callback_url);     // ✅ este tiene que matchear el exchange
-    dialog.searchParams.set("response_type", "code");
-    dialog.searchParams.set("scope", (cfg.scopes||[]).join(","));
-    dialog.searchParams.set("state", cfg.state);
-    dialog.searchParams.set("config_id", cfg.config_id);
-
-    // extras embedded signup
-    dialog.searchParams.set("override_default_response_type", "true");
-    dialog.searchParams.set("extras", JSON.stringify({ setup:{}, featureType:"", sessionInfoVersion:"3" }));
-    return dialog.toString();
-  }
-
-  $("btnConnect").addEventListener("click", async ()=>{
-    try{
-      setStatus("Abriendo flujo…", null);
-
-      const cfg = await getConfig();
-      const dialogUrl = buildDialogUrl(cfg);
-
-      LOG("➡️ OPEN popup dialog", { dialogUrl, bridge_url_expected: cfg.bridge_url });
-
-      const pop = openCenteredPopup(dialogUrl, cfg.popup?.width || 520, cfg.popup?.height || 720);
-      if(!pop){
-        setStatus("⚠️ Popup bloqueado (habilitá popups)", false);
-        return;
-      }
-      setStatus("Esperando autorización…", null);
-    } catch(e){
-      LOG("❌ Error conectando", { error: String(e) });
-      setStatus("❌ Error conectando", false);
-    }
-  });
-
-  $("btnClear").addEventListener("click", ()=>{
-    localStorage.removeItem(LS_KEY);
-    $("wsp_token").value = "";
-    setStatus("🧹 localStorage borrado", null);
-    LOG("🧹 localStorage borrado");
-  });
-
-  // ✅ Guardar integración en tu backend de test
-  $("btnSaveIntegration").addEventListener("click", async ()=>{
-    try{
-      const bearer = $("bearer").value.trim();
-      const waBase = $("waBase").value.trim().replace(/\/$/, "");
-      const url = waBase + "/hi-WhatsApp-Api-test/integrations";
-
-      const body = {
-        company_uuid: $("company_uuid").value.trim(),
-        company_token: $("company_token").value.trim(),
-        waba_id: $("waba_id").value.trim(),
-        phone_number_id: $("phone_number_id").value.trim(),
-        number: $("number").value.trim(),
-        business_id: $("business_id").value.trim(),
-        wsp_token: $("wsp_token").value.trim(),
-        endpoint: $("endpoint").value.trim(),
-        status: "ACTIVO",
-        description: "POC Embedded Signup",
-        last_error: "",
-        last_pin: ""
+      const LOG = (msg, obj) => {
+        const line = `[${new Date().toISOString()}] ${msg}` + (obj ? "\n" + JSON.stringify(obj, null, 2) : "");
+        $("log").textContent += ($("log").textContent ? "\n\n" : "") + line;
       };
 
-      LOG("➡️ POST /integrations", { url, body });
+      const setStatus = (text, ok = null) => {
+        $("status").value = text;
+        $("status").style.color = ok === true ? "#1ee3a8" : ok === false ? "#ff5c7a" : "#eaf0ff";
+      };
 
-      const r = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type":"application/json",
-          ...(bearer ? { "Authorization": "Bearer " + bearer } : {})
-        },
-        body: JSON.stringify(body)
+      function openCenteredPopup(url, w, h) {
+        const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+        const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth;
+        const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
+        const left = ((width / 2) - (w / 2)) + dualScreenLeft;
+        const top = ((height / 2) - (h / 2)) + dualScreenTop;
+        const features = `scrollbars=yes,width=${w},height=${h},top=${top},left=${left}`;
+        return window.open(url, "wa_meta_oauth", features);
+      }
+
+      function fillIntegrationFieldsFromResult(result) {
+        if (!result) return;
+
+        if (result.access_token) $("wsp_token").value = result.access_token;
+        if (result.business_id) $("business_id").value = result.business_id;
+        if (result.waba_id) $("waba_id").value = result.waba_id;
+        if (result.phone_number_id) $("phone_number_id").value = result.phone_number_id;
+        if (result.number) $("number").value = result.number;
+      }
+
+      // ✅ Recibe del bridge
+      window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (!data || data.type !== "HICHAT_WA_OAUTH_RESULT") return;
+
+        LOG("📩 postMessage recibido", data);
+
+        if (!data.ok) {
+          setStatus("❌ OAuth falló", false);
+          return;
+        }
+
+        const result = data.result || {};
+        const token = result.access_token;
+
+        if (token) {
+          localStorage.setItem(LS_KEY, JSON.stringify({ state: data.state, result }));
+
+          // ✅ autocompleta token + datos
+          fillIntegrationFieldsFromResult(result);
+
+          setStatus("✅ Conectado (token + datos del número)", true);
+
+          LOG("✅ Datos autocompletados", {
+            business_id: result.business_id,
+            waba_id: result.waba_id,
+            phone_number_id: result.phone_number_id,
+            number: result.number,
+            verified_name: result.verified_name,
+            quality_rating: result.quality_rating,
+            onboarding_fetch_error: result.onboarding_fetch_error
+          });
+        } else {
+          setStatus("⚠️ Volvió pero sin token", false);
+        }
       });
 
-      const txt = await r.text();
-      let json;
-      try { json = txt ? JSON.parse(txt) : null; } catch { json = { raw: txt }; }
+      async function getConfig() {
+        const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
+        const url = apiBase + "/backoffice/whatsapp/signup/config?return_to=" + encodeURIComponent("/wa-poc.html");
+        LOG("➡️ GET config", { url });
 
-      if(!r.ok){
-        LOG("❌ Error guardando integración", { status: r.status, json });
-        setStatus("❌ Error guardando integración", false);
-        return;
+        const r = await fetch(url);
+        const txt = await r.text();
+        let j;
+        try { j = txt ? JSON.parse(txt) : null; } catch { j = { raw: txt }; }
+
+        if (!r.ok) {
+          throw new Error(`Error GET config (${r.status}): ${JSON.stringify(j)}`);
+        }
+
+        LOG("✅ config", j);
+        return j;
       }
 
-      LOG("✅ Integración guardada", json);
-      setStatus("✅ Integración guardada", true);
-    } catch(e){
-      LOG("❌ Error guardando integración", { error: String(e) });
-      setStatus("❌ Error guardando integración", false);
-    }
-  });
+      function buildDialogUrl(cfg) {
+        const dialog = new URL(`https://www.facebook.com/${cfg.graph_version}/dialog/oauth`);
+        dialog.searchParams.set("client_id", cfg.app_id);
+        dialog.searchParams.set("redirect_uri", cfg.callback_url); // ✅ debe coincidir con el exchange
+        dialog.searchParams.set("response_type", "code");
+        dialog.searchParams.set("scope", (cfg.scopes || []).join(","));
+        dialog.searchParams.set("state", cfg.state);
+        dialog.searchParams.set("config_id", cfg.config_id);
 
-  // Autocargar token si existe
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      const token = parsed?.result?.access_token;
-      if(token){
-        $("wsp_token").value = token;
-        setStatus("✅ Ya había token guardado", true);
-        LOG("🔐 Token recuperado de localStorage");
+        // extras embedded signup
+        dialog.searchParams.set("override_default_response_type", "true");
+        dialog.searchParams.set("extras", JSON.stringify({ setup: {}, featureType: "", sessionInfoVersion: "3" }));
+
+        return dialog.toString();
       }
-    }
-  } catch {}
-})();
-</script>
+
+      $("btnConnect").addEventListener("click", async () => {
+        try {
+          setStatus("Abriendo flujo…", null);
+
+          const cfg = await getConfig();
+          const dialogUrl = buildDialogUrl(cfg);
+
+          LOG("➡️ OPEN popup dialog", { dialogUrl, bridge_url_expected: cfg.bridge_url });
+
+          const pop = openCenteredPopup(dialogUrl, cfg.popup?.width || 520, cfg.popup?.height || 720);
+          if (!pop) {
+            setStatus("⚠️ Popup bloqueado (habilitá popups)", false);
+            return;
+          }
+
+          setStatus("Esperando autorización…", null);
+        } catch (e) {
+          LOG("❌ Error conectando", { error: String(e) });
+          setStatus("❌ Error conectando", false);
+        }
+      });
+
+      $("btnClear").addEventListener("click", () => {
+        localStorage.removeItem(LS_KEY);
+
+        // limpiar campos autocompletados
+        $("wsp_token").value = "";
+        $("business_id").value = "";
+        $("waba_id").value = "";
+        $("phone_number_id").value = "";
+        $("number").value = "";
+
+        setStatus("🧹 localStorage borrado", null);
+        LOG("🧹 localStorage borrado");
+      });
+
+      // ✅ Guardar integración en tu backend de test
+      $("btnSaveIntegration").addEventListener("click", async () => {
+        try {
+          const bearer = $("bearer").value.trim();
+          const waBase = $("waBase").value.trim().replace(/\/$/, "");
+          const url = waBase + "/hi-WhatsApp-Api-test/integrations";
+
+          const body = {
+            company_uuid: $("company_uuid").value.trim(),
+            company_token: $("company_token").value.trim(),
+            waba_id: $("waba_id").value.trim(),
+            phone_number_id: $("phone_number_id").value.trim(),
+            number: $("number").value.trim(),
+            business_id: $("business_id").value.trim(),
+            wsp_token: $("wsp_token").value.trim(),
+            endpoint: $("endpoint").value.trim(),
+            status: "ACTIVO",
+            description: "POC Embedded Signup",
+            last_error: "",
+            last_pin: ""
+          };
+
+          LOG("➡️ POST /integrations", { url, body });
+
+          const r = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(bearer ? { "Authorization": "Bearer " + bearer } : {})
+            },
+            body: JSON.stringify(body)
+          });
+
+          const txt = await r.text();
+          let json;
+          try { json = txt ? JSON.parse(txt) : null; } catch { json = { raw: txt }; }
+
+          if (!r.ok) {
+            LOG("❌ Error guardando integración", { status: r.status, json });
+            setStatus("❌ Error guardando integración", false);
+            return;
+          }
+
+          LOG("✅ Integración guardada", json);
+          setStatus("✅ Integración guardada", true);
+        } catch (e) {
+          LOG("❌ Error guardando integración", { error: String(e) });
+          setStatus("❌ Error guardando integración", false);
+        }
+      });
+
+      // ✅ Autocargar token + datos si ya quedaron en localStorage
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const result = parsed?.result || {};
+          const token = result?.access_token;
+
+          if (token) {
+            fillIntegrationFieldsFromResult(result);
+            setStatus("✅ Ya había token/datos guardados", true);
+            LOG("🔐 Token y datos recuperados de localStorage", {
+              business_id: result.business_id,
+              waba_id: result.waba_id,
+              phone_number_id: result.phone_number_id,
+              number: result.number
+            });
+          }
+        }
+      } catch (e) {
+        LOG("⚠️ Error leyendo localStorage", { error: String(e) });
+      }
+    })();
+  </script>
 </body>
+
 </html>
