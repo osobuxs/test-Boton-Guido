@@ -585,7 +585,6 @@ document.addEventListener("DOMContentLoaded", function () {
       response_type: "code",
       override_default_response_type: true,
       scope: cfg.scopes.join(","),
-      redirect_uri: cfg.redirectUri,
       extras: { setup: {}, featureType: "", sessionInfoVersion: "3" }
     });
   };
