@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>HiChat - Meta/WhatsApp Integrations Tester (POC)</title>
+  <title>HiChat - WhatsApp Embedded Signup Tester</title>
   <style>
     :root{
       --bg:#0b1020; --card:#111a33; --muted:#8ea0c8; --text:#eaf0ff;
@@ -50,7 +50,6 @@
       font-size:12px; line-height: 1.35;
     }
     .split{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
-    .muted{ color:var(--muted); font-size:12px; }
     .kv{ border:1px dashed var(--border); border-radius:10px; padding:10px; background: rgba(255,255,255,.02); }
     .kv .k{ font-size:12px; color:var(--muted); }
     .kv .v{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; margin-top:6px; word-break: break-all; }
@@ -76,28 +75,24 @@
 </head>
 <body>
 <header>
-  <h1>HiChat - Integrations Tester</h1>
-  <p>Bearer (Swagger) + Embedded Signup (code) + Exchange (BACKEND) + POST /integrations (WhatsApp y Meta)</p>
+  <h1>HiChat - WhatsApp Embedded Signup Tester</h1>
+  <p>Embedded Signup (code) → Exchange (BACKEND) → POST /integrations (WhatsApp)</p>
 </header>
 
 <main>
   <section class="card">
-    <h2>0) Configuración global</h2>
+    <h2>0) Configuración</h2>
     <div class="grid">
       <div class="notice">
-        Si ves errores, mirá <b>Logs</b>. Si el SDK no carga, desactivá AdBlock/uBlock o abrí el HTML por <b>http://localhost</b>.
+        Si el SDK no carga, desactivá AdBlock/uBlock o serví el HTML por <b>http://localhost</b>.
       </div>
 
       <div class="danger">
-        <b>Importante:</b> se elimina el “Modo A”. Siempre se usa <b>Método B</b>:
-        <br/>• Obtener <b>code</b> con Embedded Signup
-        <br/>• Intercambiar <b>code → access_token</b> llamando a tu backend:
+        <b>Flujo:</b>
+        <br/>• Obtener <b>code</b> con Embedded Signup (WhatsApp)
+        <br/>• Intercambiar <b>code → access_token</b> llamando a tu backend
         <div class="small" style="margin-top:8px;">
-          POST <b>http://localhost:4032/hi-WhatsApp-Api-test/meta/oauth/exchange-code</b>
-          <br/>Body JSON: <code>{ "code": "..." }</code>
-        </div>
-        <div class="small" style="margin-top:8px;">
-          Todo lo que se guarda en localStorage (tokens) es sensible. Usalo solo local/dev.
+          POST <b>.../meta/oauth/exchange-code</b> — Body: <code>{ "code": "..." }</code>
         </div>
       </div>
 
@@ -112,19 +107,8 @@
           <input id="waBase" value="https://test-wp.hichat.com.ar" />
         </div>
         <div>
-          <label>Base URL Instagram/Meta API</label>
-          <input id="igBase" value="https://test-ig.hichat.com.ar" />
-        </div>
-      </div>
-
-      <div class="row2">
-        <div>
-          <label>POST WhatsApp integrations path</label>
+          <label>POST /integrations path</label>
           <input id="waCreatePath" value="/hi-WhatsApp-Api-test/integrations" />
-        </div>
-        <div>
-          <label>POST Meta integrations path</label>
-          <input id="metaCreatePath" value="/hi-Instagram-Api-test/integrations" />
         </div>
       </div>
 
@@ -153,17 +137,15 @@
       </div>
 
       <div class="btns">
-        <button class="warn" id="btnPing" type="button">PING (probar click)</button>
-      </div>
-
-      <div class="btns">
-        <button class="bad" id="btnClearAuth" type="button">Borrar tokens guardados (localStorage)</button>
+        <button class="warn" id="btnPing" type="button">PING</button>
+        <button class="bad" id="btnClearAuth" type="button">Borrar auth (localStorage)</button>
+        <button class="bad" id="btnClearStorage" type="button">Borrar config (localStorage)</button>
       </div>
     </div>
 
     <hr/>
 
-    <h2>1) Meta SDK / Embedded Signup</h2>
+    <h2>1) WhatsApp Embedded Signup</h2>
     <div class="grid">
       <div class="row3">
         <div>
@@ -181,7 +163,7 @@
         </div>
         <div>
           <label>Scopes (coma)</label>
-          <input id="scopes" value="business_management,pages_show_list,instagram_basic,whatsapp_business_management" />
+          <input id="scopes" value="whatsapp_business_management,business_management" />
         </div>
       </div>
 
@@ -191,19 +173,13 @@
           <input id="configIdWa" value="1956929758216023" />
         </div>
         <div>
-          <label>config_id Meta (FB/IG)</label>
-          <input id="configIdMeta" value="826458986881281" />
+          <label>redirect_uri (debe matchear el META_REDIRECT_URI)</label>
+          <input id="redirectUri" value="https://11jx77f9-4032.brs.devtunnels.ms/hi-WhatsApp-Api-test/meta/oauth/callback" />
         </div>
-      </div>
-
-      <div>
-        <label>redirect_uri</label>
-        <input id="redirectUri" value="https://hifenix.com.ar/" />
       </div>
 
       <div class="btns">
         <button class="primary" id="btnLoginWa" type="button">Login Embedded Signup (WhatsApp)</button>
-        <button class="primary" id="btnLoginMeta" type="button">Login Embedded Signup (Meta FB/IG)</button>
         <button class="warn" id="btnLogout" type="button">FB.logout()</button>
         <button class="ok" id="btnExchangeNow" type="button">Obtener token (BACKEND)</button>
       </div>
@@ -272,47 +248,6 @@
         <button class="warn" id="btnFillWaFromExchange" type="button">Pegar último token → wsp_token</button>
       </div>
     </div>
-
-    <hr/>
-
-    <h2>3) Crear integración Meta (IG / FB)</h2>
-    <div class="grid">
-      <div class="row2">
-        <div><label>company_uuid *</label><input id="meta_company_uuid" value="123" /></div>
-        <div><label>company_token *</label><input id="meta_company_token" /></div>
-      </div>
-
-      <div class="row2">
-        <div><label>origin *</label>
-          <select id="meta_origin"><option value="FACEBOOK">FACEBOOK</option><option value="INSTAGRAM">INSTAGRAM</option></select>
-        </div>
-        <div><label>account_id</label><input id="meta_account_id" /></div>
-      </div>
-
-      <div class="row2">
-        <div><label>page_id</label><input id="meta_page_id" /></div>
-        <div><label>endpoint</label><input id="meta_endpoint" /></div>
-      </div>
-
-      <div class="row2">
-        <div><label>meta_token *</label><input id="meta_token" placeholder="Si está vacío, se autocompleta con el último access_token" /></div>
-        <div><label>status</label>
-          <select id="meta_status"><option value="ACTIVO">ACTIVO</option><option value="INACTIVO">INACTIVO</option></select>
-        </div>
-      </div>
-
-      <div class="row2">
-        <div><label>last_error</label><input id="meta_last_error" /></div>
-        <div><label>last_pin</label><input id="meta_last_pin" /></div>
-      </div>
-
-      <div><label>description</label><input id="meta_description" /></div>
-
-      <div class="btns">
-        <button class="ok" id="btnCreateMeta" type="button">Crear Meta Integration</button>
-        <button class="warn" id="btnFillMetaFromExchange" type="button">Pegar último token → meta_token</button>
-      </div>
-    </div>
   </section>
 
   <section class="card">
@@ -323,7 +258,7 @@
           <span id="lastDot" class="statusDot"></span>
           <span>Último resultado:</span> <b id="lastStatus">—</b>
         </div>
-        <pre id="resultPre">{ "tip": "Probá PING. Luego Login → (auto)Token(BACKEND) → Create" }</pre>
+        <pre id="resultPre">{ "tip": "PING → Login → (auto) Exchange → Create Integration" }</pre>
       </div>
       <div>
         <div class="pill" style="margin-bottom:10px;">
@@ -335,8 +270,7 @@
     </div>
 
     <div style="margin-top:14px;" class="btns">
-      <button class="warn" id="btnClear" type="button">Limpiar</button>
-      <button class="bad" id="btnClearStorage" type="button">Borrar localStorage (config)</button>
+      <button class="warn" id="btnClear" type="button">Limpiar salida/logs</button>
     </div>
   </section>
 </main>
@@ -358,8 +292,8 @@ document.addEventListener("DOMContentLoaded", function () {
     return null;
   }
 
-  var CFG_KEY = "hichatMetaTesterCfg";
-  var AUTH_KEY = "hichatMetaTesterAuth";
+  var CFG_KEY = "hichatWaTesterCfg";
+  var AUTH_KEY = "hichatWaTesterAuth";
 
   var log = function (msg, obj) {
     var pre = $("logPre");
@@ -401,6 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   var saveAuth = function () {
+    // ⚠️ Recomendación: NO persistir code (evita reuso accidental)
     var payload = {
       code: state.code,
       accessToken: state.accessToken,
@@ -423,7 +358,6 @@ document.addEventListener("DOMContentLoaded", function () {
       refreshKVs();
 
       if (state.accessToken) {
-        $("meta_token").value = ($("meta_token").value.trim() ? $("meta_token").value.trim() : state.accessToken);
         $("wa_wsp_token").value = ($("wa_wsp_token").value.trim() ? $("wa_wsp_token").value.trim() : state.accessToken);
       }
 
@@ -448,9 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return {
       bearer: $("bearer").value.trim(),
       waBase: $("waBase").value.trim().replace(/\/$/, ""),
-      igBase: $("igBase").value.trim().replace(/\/$/, ""),
       waCreatePath: $("waCreatePath").value.trim(),
-      metaCreatePath: $("metaCreatePath").value.trim(),
       exchangeUrl: $("exchangeUrl").value.trim(),
       autoExchange: $("autoExchange").value === "true",
 
@@ -458,19 +390,15 @@ document.addEventListener("DOMContentLoaded", function () {
       graphVersion: $("graphVersion").value.trim(),
       scopes: ($("scopes").value || "").split(",").map(function (s) { return s.trim(); }).filter(function (x) { return !!x; }),
       configIdWa: $("configIdWa").value.trim(),
-      configIdMeta: $("configIdMeta").value.trim(),
       redirectUri: $("redirectUri").value.trim()
     };
   };
 
   var saveCfg = function () {
     var cfg = getCfg();
-    var toSave = {};
-    for (var k in cfg) toSave[k] = cfg[k];
-
-    localStorage.setItem(CFG_KEY, JSON.stringify(toSave));
-    log("✅ Config guardada", toSave);
-    setLast("CONFIG GUARDADA", toSave, true);
+    localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+    log("✅ Config guardada", cfg);
+    setLast("CONFIG GUARDADA", cfg, true);
   };
 
   var loadCfg = function () {
@@ -478,12 +406,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!raw) return;
     try {
       var cfg = JSON.parse(raw);
+
       if (cfg.bearer) $("bearer").value = cfg.bearer;
       if (cfg.waBase) $("waBase").value = cfg.waBase;
-      if (cfg.igBase) $("igBase").value = cfg.igBase;
       if (cfg.waCreatePath) $("waCreatePath").value = cfg.waCreatePath;
-      if (cfg.metaCreatePath) $("metaCreatePath").value = cfg.metaCreatePath;
-
       if (cfg.exchangeUrl) $("exchangeUrl").value = cfg.exchangeUrl;
       if (typeof cfg.autoExchange === "boolean") $("autoExchange").value = String(cfg.autoExchange);
 
@@ -491,7 +417,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cfg.graphVersion) $("graphVersion").value = cfg.graphVersion;
       if (Array.isArray(cfg.scopes)) $("scopes").value = cfg.scopes.join(",");
       if (cfg.configIdWa) $("configIdWa").value = cfg.configIdWa;
-      if (cfg.configIdMeta) $("configIdMeta").value = cfg.configIdMeta;
       if (cfg.redirectUri) $("redirectUri").value = cfg.redirectUri;
 
       log("ℹ️ Config cargada desde localStorage", cfg);
@@ -542,28 +467,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var setTokenEverywhere = function (accessToken, meta) {
     state.accessToken = accessToken || null;
-    state.expiresIn = firstNotNull(
-      meta && meta.expiresIn,
-      meta && meta.expires_in,
-      state.expiresIn
-    );
+    state.expiresIn = firstNotNull(meta && meta.expiresIn, meta && meta.expires_in, state.expiresIn);
     state.obtainedAt = (meta && meta.obtainedAt) ? meta.obtainedAt : now();
 
     refreshKVs();
 
     if (state.accessToken) {
-      $("meta_token").value = state.accessToken;
       $("wa_wsp_token").value = $("wa_wsp_token").value.trim() || state.accessToken;
 
       saveAuth();
-      log("✅ Access token seteado y guardado en localStorage", { access_token: state.accessToken, expires_in: state.expiresIn });
+      log("✅ Access token seteado", { access_token: state.accessToken, expires_in: state.expiresIn });
       setLast("TOKEN OK", { access_token: state.accessToken, expires_in: state.expiresIn, obtained_at: state.obtainedAt }, true);
     } else {
       setLast("NO SE OBTUVO access_token", { meta: meta }, false);
     }
   };
 
-  // ✅ ÚNICO MÉTODO (B): POST al backend exchangeUrl con body { code }
+  // ✅ POST al backend exchangeUrl con body { code }
   var obtainTokenViaBackend = async function () {
     var cfg = getCfg();
 
@@ -585,15 +505,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      // DTO: { code: string }
       var json = await fetchJson(cfg.exchangeUrl, { method: "POST", body: { code: state.code } });
 
-      // tolerante a nombres posibles de respuesta
-      var token =
-        json.access_token ||
-        json.accessToken ||
-        (json.data && (json.data.access_token || json.data.accessToken)) ||
-        null;
+      var token = json.access_token || json.accessToken || (json.data && (json.data.access_token || json.data.accessToken)) || null;
 
       var expiresIn =
         (json.expires_in !== undefined && json.expires_in !== null) ? json.expires_in :
@@ -604,6 +518,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (token) {
         setTokenEverywhere(token, { expiresIn: expiresIn, obtainedAt: now(), source: "backend_exchange", raw: json });
+
+        // ✅ Evita reuso accidental de code
+        state.code = null;
+        saveAuth();
+        refreshKVs();
       } else {
         setLast("EXCHANGE OK pero sin access_token", json, false);
       }
@@ -613,19 +532,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  var launchEmbedded = function (opts) {
-    var kind = opts.kind;
+  var launchEmbeddedWhatsApp = function () {
     var cfg = getCfg();
     if (typeof FB === "undefined") {
       setLast("FB SDK NO DISPONIBLE", { tip: "SDK no cargó" }, false);
       return;
     }
 
-    var config_id = (kind === "whatsapp") ? cfg.configIdWa : cfg.configIdMeta;
-    log("➡️ FB.login()", { kind: kind, config_id: config_id, scopes: cfg.scopes, response_type: "code" });
+    var config_id = cfg.configIdWa;
+
+    // ✅ log clave para verificar mismatch
     log("🧷 OAuth dialog redirect_uri (cfg.redirectUri)", { redirect_uri: cfg.redirectUri });
+
+    log("➡️ FB.login()", { kind: "whatsapp", config_id: config_id, scopes: cfg.scopes, response_type: "code" });
+
     FB.login(function (response) {
-      log("FB.login response (" + kind + ")", response);
+      log("FB.login response (whatsapp)", response);
 
       if (!response || !response.authResponse) {
         setLast("LOGIN CANCELADO / SIN authResponse", response, false);
@@ -635,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var ar = response.authResponse;
       var code = ar.code ? ar.code : null;
 
-      // ✅ ya NO usamos accessToken del SDK (método A eliminado)
+      // siempre resetear token en memoria (este flujo usa exchange backend)
       state.accessToken = null;
       state.expiresIn = null;
       state.obtainedAt = null;
@@ -653,10 +575,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      setLast("LOGIN OK", { kind: kind, code: code }, true);
+      setLast("LOGIN OK", { code: code }, true);
 
       if (cfg.autoExchange) {
-        obtainTokenViaBackend().catch(function (e) { log("❌ Auto-obtainToken (backend) falló", e); });
+        obtainTokenViaBackend().catch(function (e) { log("❌ Auto-exchange (backend) falló", e); });
       }
     }, {
       config_id: config_id,
@@ -664,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
       override_default_response_type: true,
       scope: cfg.scopes.join(","),
       redirect_uri: cfg.redirectUri,
-      extras: (kind === "whatsapp") ? { setup: {}, featureType: "", sessionInfoVersion: "3" } : undefined
+      extras: { setup: {}, featureType: "", sessionInfoVersion: "3" }
     });
   };
 
@@ -685,22 +607,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  var buildMetaBody = function () {
-    return {
-      account_id: $("meta_account_id").value.trim(),
-      page_id: $("meta_page_id").value.trim(),
-      company_token: $("meta_company_token").value.trim(),
-      endpoint: $("meta_endpoint").value.trim(),
-      meta_token: $("meta_token").value.trim(),
-      status: $("meta_status").value.trim(),
-      last_error: $("meta_last_error").value.trim(),
-      last_pin: $("meta_last_pin").value.trim(),
-      company_uuid: $("meta_company_uuid").value.trim(),
-      description: $("meta_description").value.trim(),
-      origin: $("meta_origin").value.trim()
-    };
-  };
-
   var wire = function (id, fn) {
     var el = $(id);
     if (!el) { log("❌ No existe el elemento", { id: id }); return; }
@@ -717,8 +623,7 @@ document.addEventListener("DOMContentLoaded", function () {
   wire("btnClear", function () { $("resultPre").textContent = "{}"; $("logPre").textContent = ""; });
   wire("btnClearAuth", clearAuth);
 
-  wire("btnLoginWa", function () { launchEmbedded({ kind: "whatsapp" }); });
-  wire("btnLoginMeta", function () { launchEmbedded({ kind: "meta" }); });
+  wire("btnLoginWa", function () { launchEmbeddedWhatsApp(); });
 
   wire("btnLogout", function () {
     if (typeof FB === "undefined") { setLast("FB SDK NO DISPONIBLE", {}, false); return; }
@@ -727,12 +632,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   wire("btnExchangeNow", function () {
     obtainTokenViaBackend().catch(function (e) { log("❌ Obtener token (backend) error", e); });
-  });
-
-  wire("btnFillMetaFromExchange", function () {
-    if (!state.accessToken) { setLast("NO HAY access_token", { tip: "Hacé obtener token primero" }, false); return; }
-    $("meta_token").value = state.accessToken;
-    setLast("OK", { meta_token_set: true }, true);
   });
 
   wire("btnFillWaFromExchange", function () {
@@ -758,25 +657,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     fetchJson(url, { method: "POST", body: body, bearer: cfg.bearer })
       .catch(function (e) { log("❌ Create WA error", e); });
-  });
-
-  wire("btnCreateMeta", function () {
-    var cfg = getCfg();
-    var url = cfg.igBase + cfg.metaCreatePath;
-    var body = buildMetaBody();
-
-    if (!body.meta_token && state.accessToken) {
-      body.meta_token = state.accessToken;
-      $("meta_token").value = state.accessToken;
-      log("🪄 Autocompleté meta_token con el último access_token", { meta_token_set: true });
-    }
-
-    var required = ["company_uuid","company_token","meta_token","origin"];
-    var missing = required.filter(function (k) { return !String(body[k] || "").trim(); });
-    if (missing.length) { setLast("FALTAN CAMPOS REQUERIDOS (Meta)", { missing: missing, body: body }, false); return; }
-
-    fetchJson(url, { method: "POST", body: body, bearer: cfg.bearer })
-      .catch(function (e) { log("❌ Create Meta error", e); });
   });
 
   $("sdkStatus").textContent = "cargando...";
@@ -808,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadCfg();
   loadAuth();
   refreshKVs();
-  log("✅ Inicializado. Probá PING y luego Login.");
+  log("✅ Inicializado. PING → Login → Exchange → Create Integration.");
 });
 </script>
 </body>
