@@ -82,7 +82,7 @@
 <body>
   <div class="card">
     <h2>POC - Conectar WhatsApp (Embedded Signup)</h2>
-    <p class="muted">Botón → popup → vuelve y queda “conectado”. Luego guardás integración en tu backend test.</p>
+    <p class="muted">El backend devuelve la URL lista para abrir el popup de Meta.</p>
 
     <div class="row">
       <div>
@@ -178,7 +178,6 @@
         if (result.number) $("number").value = result.number;
       }
 
-      // ✅ Recibe del bridge
       window.addEventListener("message", (event) => {
         const data = event.data;
         if (!data || data.type !== "HICHAT_WA_OAUTH_RESULT") return;
@@ -195,8 +194,6 @@
 
         if (token) {
           localStorage.setItem(LS_KEY, JSON.stringify({ state: data.state, result }));
-
-          // ✅ autocompleta token + datos
           fillIntegrationFieldsFromResult(result);
 
           setStatus("✅ Conectado (token + datos del número)", true);
@@ -218,35 +215,26 @@
       async function getConfig() {
         const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
         const url = apiBase + "/backoffice/whatsapp/signup/config?return_to=" + encodeURIComponent("/wa-poc.html");
+
         LOG("➡️ GET config", { url });
 
         const r = await fetch(url);
         const txt = await r.text();
+
         let j;
-        try { j = txt ? JSON.parse(txt) : null; } catch { j = { raw: txt }; }
+        try { j = txt ? JSON.parse(txt) : null; }
+        catch { j = { raw: txt }; }
 
         if (!r.ok) {
           throw new Error(`Error GET config (${r.status}): ${JSON.stringify(j)}`);
         }
 
+        if (!j?.dialog_url) {
+          throw new Error("El backend no devolvió dialog_url");
+        }
+
         LOG("✅ config", j);
         return j;
-      }
-
-      function buildDialogUrl(cfg) {
-        const dialog = new URL(`https://www.facebook.com/${cfg.graph_version}/dialog/oauth`);
-        dialog.searchParams.set("client_id", cfg.app_id);
-        dialog.searchParams.set("redirect_uri", cfg.callback_url); // ✅ debe coincidir con el exchange
-        dialog.searchParams.set("response_type", "code");
-        dialog.searchParams.set("scope", (cfg.scopes || []).join(","));
-        dialog.searchParams.set("state", cfg.state);
-        dialog.searchParams.set("config_id", cfg.config_id);
-
-        // extras embedded signup
-        dialog.searchParams.set("override_default_response_type", "true");
-        dialog.searchParams.set("extras", JSON.stringify({ setup: {}, featureType: "", sessionInfoVersion: "3" }));
-
-        return dialog.toString();
       }
 
       $("btnConnect").addEventListener("click", async () => {
@@ -254,9 +242,14 @@
           setStatus("Abriendo flujo…", null);
 
           const cfg = await getConfig();
-          const dialogUrl = buildDialogUrl(cfg);
 
-          LOG("➡️ OPEN popup dialog", { dialogUrl, bridge_url_expected: cfg.bridge_url });
+          // ✅ El front ya no arma nada; usa URL directa del backend
+          const dialogUrl = cfg.dialog_url;
+
+          LOG("➡️ OPEN popup dialog", {
+            dialogUrl,
+            bridge_url_expected: cfg.bridge_url
+          });
 
           const pop = openCenteredPopup(dialogUrl, cfg.popup?.width || 520, cfg.popup?.height || 720);
           if (!pop) {
@@ -274,7 +267,6 @@
       $("btnClear").addEventListener("click", () => {
         localStorage.removeItem(LS_KEY);
 
-        // limpiar campos autocompletados
         $("wsp_token").value = "";
         $("business_id").value = "";
         $("waba_id").value = "";
@@ -285,7 +277,6 @@
         LOG("🧹 localStorage borrado");
       });
 
-      // ✅ Guardar integración en tu backend de test
       $("btnSaveIntegration").addEventListener("click", async () => {
         try {
           const bearer = $("bearer").value.trim();
@@ -336,7 +327,7 @@
         }
       });
 
-      // ✅ Autocargar token + datos si ya quedaron en localStorage
+      // restaurar si hay datos en localStorage
       try {
         const raw = localStorage.getItem(LS_KEY);
         if (raw) {
