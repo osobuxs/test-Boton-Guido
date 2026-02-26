@@ -6,83 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>POC WhatsApp Embedded Signup</title>
   <style>
-    body {
-      font-family: system-ui;
-      margin: 0;
-      padding: 18px;
-      background: #0b1020;
-      color: #eaf0ff
-    }
-
-    .card {
-      max-width: 920px;
-      background: #111a33;
-      border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 12px;
-      padding: 14px
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px
-    }
-
-    label {
-      display: block;
-      font-size: 12px;
-      color: #8ea0c8;
-      margin: 8px 0 6px
-    }
-
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, .12);
-      background: rgba(255, 255, 255, .03);
-      color: #eaf0ff;
-      padding: 10px
-    }
-
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 12px;
-      cursor: pointer;
-      background: #1877f2;
-      color: #fff;
-      font-weight: 800
-    }
-
-    button.secondary {
-      background: rgba(255, 255, 255, .12)
-    }
-
-    pre {
-      background: rgba(0, 0, 0, .25);
-      border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 12px;
-      padding: 12px;
-      overflow: auto
-    }
-
-    .muted {
-      color: #8ea0c8
-    }
-
-    hr {
-      border: 0;
-      border-top: 1px solid rgba(255, 255, 255, .12);
-      margin: 14px 0
-    }
+    body { font-family: system-ui; margin: 0; padding: 18px; background: #0b1020; color: #eaf0ff }
+    .card { max-width: 920px; background: #111a33; border: 1px solid rgba(255, 255, 255, .1); border-radius: 12px; padding: 14px }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+    label { display: block; font-size: 12px; color: #8ea0c8; margin: 8px 0 6px }
+    input { width: 100%; box-sizing: border-box; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .03); color: #eaf0ff; padding: 10px }
+    button { border: 0; border-radius: 10px; padding: 10px 12px; cursor: pointer; background: #1877f2; color: #fff; font-weight: 800 }
+    button.secondary { background: rgba(255, 255, 255, .12) }
+    button:disabled { opacity: .45; cursor: not-allowed }
+    pre { background: rgba(0, 0, 0, .25); border: 1px solid rgba(255, 255, 255, .1); border-radius: 12px; padding: 12px; overflow: auto }
+    .muted { color: #8ea0c8 }
+    hr { border: 0; border-top: 1px solid rgba(255, 255, 255, .12); margin: 14px 0 }
   </style>
 </head>
 
 <body>
   <div class="card">
     <h2>POC - Conectar WhatsApp (Embedded Signup)</h2>
-    <p class="muted">El backend devuelve la URL lista para abrir el popup de Meta.</p>
+    <p class="muted">1) Pedís config al backend. 2) Recién ahí se habilita el botón para abrir Meta.</p>
 
     <div class="row">
       <div>
@@ -95,47 +36,69 @@
       </div>
     </div>
 
+    <div class="row">
+      <div>
+        <label>Token Backoffice (Authorization: Bearer ...)</label>
+        <input id="boBearer" placeholder="token de sesión backoffice (si aplica)">
+      </div>
+      <div>
+        <label>return_to</label>
+        <input id="returnTo" value="/integrations">
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>Datos de Empresa</h3>
+    <div class="row">
+      <div>
+        <label>company_token (JWT empresa)</label>
+        <input id="company_token" placeholder="Pegá el company_token...">
+      </div>
+      <div>
+        <label>state (generado por backend)</label>
+        <input id="state" disabled>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>dialog_url (devuelto por backend)</label>
+        <input id="dialog_url" disabled>
+      </div>
+      <div>
+        <label>bridge_url (devuelto por backend)</label>
+        <input id="bridge_url" disabled>
+      </div>
+    </div>
+
     <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button id="btnConnect">Conectar WhatsApp</button>
+      <button id="btnGetConfig">1) Obtener botón (config)</button>
+      <button id="btnOpenMeta" disabled>2) Abrir Meta (popup)</button>
       <button class="secondary" id="btnClear">Borrar localStorage</button>
     </div>
 
     <hr>
 
-    <h3>Datos para guardar integración</h3>
+    <h3>Resultado</h3>
     <div class="row">
-      <div>
-        <label>Bearer (Swagger) para POST /integrations</label>
-        <input id="bearer" placeholder="Bearer token...">
-      </div>
-      <div>
-        <label>Base URL WhatsApp API (donde está /integrations)</label>
-        <input id="waBase" value="https://test-wp.hichat.com.ar">
-      </div>
+      <div><label>integration.uuid</label><input id="integration_uuid" disabled></div>
+      <div><label>integration.status</label><input id="integration_status" disabled></div>
     </div>
 
     <div class="row">
-      <div><label>company_uuid</label><input id="company_uuid" value="123"></div>
-      <div><label>company_token</label><input id="company_token"></div>
+      <div><label>phone_number_id</label><input id="phone_number_id" disabled></div>
+      <div><label>number</label><input id="number" disabled></div>
     </div>
 
     <div class="row">
-      <div><label>waba_id</label><input id="waba_id"></div>
-      <div><label>phone_number_id</label><input id="phone_number_id"></div>
+      <div><label>waba_id</label><input id="waba_id" disabled></div>
+      <div><label>business_id</label><input id="business_id" disabled></div>
     </div>
 
     <div class="row">
-      <div><label>number</label><input id="number" placeholder="+54..."></div>
-      <div><label>business_id (opcional)</label><input id="business_id"></div>
-    </div>
-
-    <div class="row">
-      <div><label>wsp_token (autocompleta con access_token)</label><input id="wsp_token"></div>
-      <div><label>endpoint (opcional)</label><input id="endpoint"></div>
-    </div>
-
-    <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button id="btnSaveIntegration">Guardar integración (POST /integrations)</button>
+      <div><label>stage</label><input id="stage" disabled></div>
+      <div><label>message</label><input id="message" disabled></div>
     </div>
 
     <h3 style="margin-top:16px;">Debug</h3>
@@ -145,7 +108,9 @@
   <script>
     (function () {
       const $ = (id) => document.getElementById(id);
-      const LS_KEY = "wa_poc_auth";
+      const LS_KEY = "wa_poc_flow_v2";
+
+      let lastConfig = null;
 
       const LOG = (msg, obj) => {
         const line = `[${new Date().toISOString()}] ${msg}` + (obj ? "\n" + JSON.stringify(obj, null, 2) : "");
@@ -168,90 +133,149 @@
         return window.open(url, "wa_meta_oauth", features);
       }
 
-      function fillIntegrationFieldsFromResult(result) {
-        if (!result) return;
-
-        if (result.access_token) $("wsp_token").value = result.access_token;
-        if (result.business_id) $("business_id").value = result.business_id;
-        if (result.waba_id) $("waba_id").value = result.waba_id;
-        if (result.phone_number_id) $("phone_number_id").value = result.phone_number_id;
-        if (result.number) $("number").value = result.number;
+      function clearResultUI() {
+        $("integration_uuid").value = "";
+        $("integration_status").value = "";
+        $("phone_number_id").value = "";
+        $("number").value = "";
+        $("waba_id").value = "";
+        $("business_id").value = "";
+        $("stage").value = "";
+        $("message").value = "";
       }
 
+      function fillResultUI(result) {
+        const r = result || {};
+        const integ = r.integration || {};
+
+        $("integration_uuid").value = integ.uuid || "";
+        $("integration_status").value = integ.status || "";
+
+        $("phone_number_id").value = integ.phone_number_id || r.phone_number_id || "";
+        $("number").value = integ.number || r.number || "";
+
+        $("waba_id").value = integ.waba_id || r.waba_id || "";
+        $("business_id").value = integ.business_id || r.business_id || "";
+
+        $("stage").value = r.stage || "";
+        $("message").value = r.message || "";
+
+        if (integ.status === "ACTIVO") setStatus("✅ Integración ACTIVA", true);
+        else if (integ.status) setStatus("⚠️ Integración: " + integ.status, false);
+        else if (r.stage || r.message) setStatus("⚠️ Flujo completó con aviso", false);
+      }
+
+      function fillConfigUI(cfg) {
+        $("state").value = cfg?.state || "";
+        $("dialog_url").value = cfg?.dialog_url || "";
+        $("bridge_url").value = cfg?.bridge_url || "";
+      }
+
+      function setMetaButtonEnabled(enabled) {
+        $("btnOpenMeta").disabled = !enabled;
+      }
+
+      async function postConfig() {
+        const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
+        const url = apiBase + "/backoffice/whatsapp/signup/config";
+
+        const companyToken = $("company_token").value.trim();
+        if (!companyToken) throw new Error("Falta company_token");
+
+        const body = {
+          company_token: companyToken,
+          return_to: $("returnTo").value.trim() || "/integrations"
+        };
+
+        const boBearer = $("boBearer").value.trim();
+
+        LOG("➡️ POST config", { url, body, hasAuth: !!boBearer });
+
+        const r = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(boBearer ? { "Authorization": "Bearer " + boBearer } : {})
+          },
+          body: JSON.stringify(body)
+        });
+
+        const txt = await r.text();
+        let j;
+        try { j = txt ? JSON.parse(txt) : null; }
+        catch { j = { raw: txt }; }
+
+        if (!r.ok) throw new Error(`Error POST config (${r.status}): ${JSON.stringify(j)}`);
+        if (!j?.dialog_url || !j?.state) throw new Error("El backend no devolvió dialog_url/state");
+
+        return j;
+      }
+
+      // El bridge debería mandar:
+      // { type:"HICHAT_WA_OAUTH_RESULT", ok:true/false, state, result }
       window.addEventListener("message", (event) => {
         const data = event.data;
         if (!data || data.type !== "HICHAT_WA_OAUTH_RESULT") return;
 
         LOG("📩 postMessage recibido", data);
 
+        clearResultUI();
+
         if (!data.ok) {
           setStatus("❌ OAuth falló", false);
+          $("stage").value = data.stage || "unknown";
+          $("message").value = data.message || "Falló el flujo OAuth (ver debug).";
           return;
         }
 
         const result = data.result || {};
-        const token = result.access_token;
+        fillResultUI(result);
 
-        if (token) {
-          localStorage.setItem(LS_KEY, JSON.stringify({ state: data.state, result }));
-          fillIntegrationFieldsFromResult(result);
+        try {
+          localStorage.setItem(LS_KEY, JSON.stringify({ config: lastConfig, result, createdAt: Date.now() }));
+        } catch { }
+      });
 
-          setStatus("✅ Conectado (token + datos del número)", true);
+      $("btnGetConfig").addEventListener("click", async () => {
+        try {
+          setStatus("Pidiendo config…", null);
+          clearResultUI();
+          setMetaButtonEnabled(false);
 
-          LOG("✅ Datos autocompletados", {
-            business_id: result.business_id,
-            waba_id: result.waba_id,
-            phone_number_id: result.phone_number_id,
-            number: result.number,
-            verified_name: result.verified_name,
-            quality_rating: result.quality_rating,
-            onboarding_fetch_error: result.onboarding_fetch_error
-          });
-        } else {
-          setStatus("⚠️ Volvió pero sin token", false);
+          const cfg = await postConfig();
+          lastConfig = cfg;
+
+          fillConfigUI(cfg);
+          setMetaButtonEnabled(true);
+
+          LOG("✅ Config obtenida", cfg);
+          setStatus("✅ Config lista. Ya podés abrir Meta.", true);
+
+          try {
+            localStorage.setItem(LS_KEY, JSON.stringify({ config: cfg, createdAt: Date.now() }));
+          } catch { }
+        } catch (e) {
+          LOG("❌ Error obteniendo config", { error: String(e) });
+          setStatus("❌ Error obteniendo config", false);
+          fillConfigUI(null);
+          setMetaButtonEnabled(false);
         }
       });
 
-      async function getConfig() {
-        const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
-        const url = apiBase + "/backoffice/whatsapp/signup/config?return_to=" + encodeURIComponent("/wa-poc.html");
-
-        LOG("➡️ GET config", { url });
-
-        const r = await fetch(url);
-        const txt = await r.text();
-
-        let j;
-        try { j = txt ? JSON.parse(txt) : null; }
-        catch { j = { raw: txt }; }
-
-        if (!r.ok) {
-          throw new Error(`Error GET config (${r.status}): ${JSON.stringify(j)}`);
-        }
-
-        if (!j?.dialog_url) {
-          throw new Error("El backend no devolvió dialog_url");
-        }
-
-        LOG("✅ config", j);
-        return j;
-      }
-
-      $("btnConnect").addEventListener("click", async () => {
+      $("btnOpenMeta").addEventListener("click", async () => {
         try {
-          setStatus("Abriendo flujo…", null);
-
-          const cfg = await getConfig();
-
-          // ✅ El front ya no arma nada; usa URL directa del backend
-          const dialogUrl = cfg.dialog_url;
+          if (!lastConfig?.dialog_url) {
+            setStatus("⚠️ Primero obtené la config", false);
+            return;
+          }
 
           LOG("➡️ OPEN popup dialog", {
-            dialogUrl,
-            bridge_url_expected: cfg.bridge_url
+            dialogUrl: lastConfig.dialog_url,
+            bridge_url_expected: lastConfig.bridge_url,
+            state: lastConfig.state
           });
 
-          const pop = openCenteredPopup(dialogUrl, cfg.popup?.width || 520, cfg.popup?.height || 720);
+          const pop = openCenteredPopup(lastConfig.dialog_url, lastConfig.popup?.width || 520, lastConfig.popup?.height || 720);
           if (!pop) {
             setStatus("⚠️ Popup bloqueado (habilitá popups)", false);
             return;
@@ -259,91 +283,40 @@
 
           setStatus("Esperando autorización…", null);
         } catch (e) {
-          LOG("❌ Error conectando", { error: String(e) });
-          setStatus("❌ Error conectando", false);
+          LOG("❌ Error abriendo popup", { error: String(e) });
+          setStatus("❌ Error abriendo popup", false);
         }
       });
 
       $("btnClear").addEventListener("click", () => {
         localStorage.removeItem(LS_KEY);
+        lastConfig = null;
 
-        $("wsp_token").value = "";
-        $("business_id").value = "";
-        $("waba_id").value = "";
-        $("phone_number_id").value = "";
-        $("number").value = "";
+        fillConfigUI(null);
+        clearResultUI();
+        setMetaButtonEnabled(false);
 
         setStatus("🧹 localStorage borrado", null);
         LOG("🧹 localStorage borrado");
       });
 
-      $("btnSaveIntegration").addEventListener("click", async () => {
-        try {
-          const bearer = $("bearer").value.trim();
-          const waBase = $("waBase").value.trim().replace(/\/$/, "");
-          const url = waBase + "/hi-WhatsApp-Api-test/integrations";
-
-          const body = {
-            company_uuid: $("company_uuid").value.trim(),
-            company_token: $("company_token").value.trim(),
-            waba_id: $("waba_id").value.trim(),
-            phone_number_id: $("phone_number_id").value.trim(),
-            number: $("number").value.trim(),
-            business_id: $("business_id").value.trim(),
-            wsp_token: $("wsp_token").value.trim(),
-            endpoint: $("endpoint").value.trim(),
-            status: "ACTIVO",
-            description: "POC Embedded Signup",
-            last_error: "",
-            last_pin: ""
-          };
-
-          LOG("➡️ POST /integrations", { url, body });
-
-          const r = await fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(bearer ? { "Authorization": "Bearer " + bearer } : {})
-            },
-            body: JSON.stringify(body)
-          });
-
-          const txt = await r.text();
-          let json;
-          try { json = txt ? JSON.parse(txt) : null; } catch { json = { raw: txt }; }
-
-          if (!r.ok) {
-            LOG("❌ Error guardando integración", { status: r.status, json });
-            setStatus("❌ Error guardando integración", false);
-            return;
-          }
-
-          LOG("✅ Integración guardada", json);
-          setStatus("✅ Integración guardada", true);
-        } catch (e) {
-          LOG("❌ Error guardando integración", { error: String(e) });
-          setStatus("❌ Error guardando integración", false);
-        }
-      });
-
-      // restaurar si hay datos en localStorage
+      // restaurar si hay datos guardados
       try {
         const raw = localStorage.getItem(LS_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          const result = parsed?.result || {};
-          const token = result?.access_token;
 
-          if (token) {
-            fillIntegrationFieldsFromResult(result);
-            setStatus("✅ Ya había token/datos guardados", true);
-            LOG("🔐 Token y datos recuperados de localStorage", {
-              business_id: result.business_id,
-              waba_id: result.waba_id,
-              phone_number_id: result.phone_number_id,
-              number: result.number
-            });
+          if (parsed?.config?.dialog_url) {
+            lastConfig = parsed.config;
+            fillConfigUI(lastConfig);
+            setMetaButtonEnabled(true);
+            setStatus("✅ Config recuperada. Ya podés abrir Meta.", true);
+            LOG("🔁 Config recuperada de localStorage", lastConfig);
+          }
+
+          if (parsed?.result) {
+            fillResultUI(parsed.result);
+            LOG("🔁 Resultado recuperado de localStorage", parsed.result);
           }
         }
       } catch (e) {
