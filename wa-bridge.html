@@ -1,67 +1,172 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WA Bridge</title>
+  <style>
+    body { font-family: system-ui; margin: 0; padding: 18px; background: #ffffff; color: #111; }
+    .box { max-width: 900px; margin: 0 auto; }
+    pre { background: #f6f8fa; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; overflow: auto; }
+    .muted { color: #6b7280; }
+  </style>
 </head>
-<body style="font-family:system-ui;padding:16px">
-  <h3>Conectando WhatsApp…</h3>
-  <pre id="out" style="white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:8px"></pre>
+<body>
+  <div class="box">
+    <h2>Conectando WhatsApp…</h2>
+    <p class="muted">Esperando confirmación del backend.</p>
+    <pre id="log"></pre>
+  </div>
 
-<script>
-(async function(){
-  const out = document.getElementById("out");
-  const log = (x)=> out.textContent += (out.textContent ? "\n" : "") + x;
+  <script>
+    (function () {
+      const logEl = document.getElementById("log");
+      const log = (msg, obj) => {
+        const line = msg + (obj ? "\n" + JSON.stringify(obj, null, 2) : "");
+        logEl.textContent += (logEl.textContent ? "\n\n" : "") + line;
+      };
 
-  const params = new URLSearchParams(location.search);
-  const state = params.get("state");
-  const returnTo = params.get("return_to") || "/wa-poc.html";
+      const qs = new URLSearchParams(location.search);
+      const state = qs.get("state") || "";
+      const returnToRaw = qs.get("return_to") || "/integrations";
 
-  // ✅ PONÉ TU API BASE real (mismo que en wa-poc.html)
-  const apiBase = "https://11jx77f9-4032.brs.devtunnels.ms/hi-WhatsApp-Api-test";
+      // ✅ Permitir URL absoluta o path relativo
+      // - si es "https://..." se usa tal cual
+      // - si es "/algo" se usa tal cual
+      // - si es "algo" se fuerza "/algo"
+      const normalizeReturnTo = (v) => {
+        if (!v) return "/integrations";
+        if (/^https?:\/\//i.test(v)) return v;
+        if (v.startsWith("/")) return v;
+        return "/" + v;
+      };
+      const returnTo = normalizeReturnTo(decodeURIComponent(returnToRaw));
 
-  if(!state){
-    log("Falta state");
-    location.href = returnTo;
-    return;
-  }
+      // ✅ Derivar pollUrl desde el state y el backend que te abrió el callback.
+      // En tu caso el callback está en tu API (devtunnel). El bridge no lo sabe.
+      // Por eso lo correcto es que el backend te entregue el bridge_url con la API embebida
+      // ...pero hoy no lo tenés.
+      //
+      // SOLUCIÓN PRÁCTICA: tu backend ya puede devolver "poll_url" en el config.
+      // Si todavía no lo devolvés, el bridge intenta deducirlo de document.referrer (a veces no sirve).
+      //
+      // Para no depender de eso: agregá en el bridge_url que genera el backend: &api_base=<...>
+      // Ej: https://.../wa-bridge.html?state=...&return_to=...&api_base=https://xxxxx/hi-WhatsApp-Api-test
+      //
+      const apiBase = qs.get("api_base") || ""; // <-- recomendado
+      if (!apiBase) {
+        log("⚠️ Falta api_base en querystring. Recomendado agregarlo desde backend para que el poll sea confiable.");
+      }
 
-  const pollUrl = apiBase + "/meta/oauth/poll?state=" + encodeURIComponent(state);
-  log("state=" + state);
-  log("pollUrl=" + pollUrl);
+      const pollUrl = apiBase
+        ? apiBase.replace(/\/$/, "") + "/meta/oauth/poll?state=" + encodeURIComponent(state)
+        : null;
 
-  try{
-    const r = await fetch(pollUrl);
-    const j = await r.json();
+      log("state=" + state);
+      log("return_to=" + returnTo);
+      log("pollUrl=" + (pollUrl || "(sin api_base)"));
 
-    if(!j.ready || !j.result){
-      log("Aún no está listo. Reintentando…");
-      setTimeout(()=>location.reload(), 700);
-      return;
-    }
+      if (!state) {
+        log("❌ Missing state");
+        return;
+      }
+      if (!pollUrl) {
+        log("❌ No puedo hacer poll sin api_base. Agregalo al bridge_url desde el backend.");
+        return;
+      }
 
-    const payload = {
-      type: "HICHAT_WA_OAUTH_RESULT",
-      state,
-      ok: !!j.result.access_token && !j.result.error,
-      result: j.result
-    };
+      const start = Date.now();
+      const TIMEOUT_MS = 60_000;
+      const INTERVAL_MS = 1000;
 
-    if(window.opener && !window.opener.closed){
-      window.opener.postMessage(payload, "*");
-      log("Enviado a opener. Cerrando popup…");
-      setTimeout(()=>window.close(), 250);
-      return;
-    }
+      async function poll() {
+        try {
+          const r = await fetch(pollUrl, { method: "GET" });
+          const txt = await r.text();
+          let json;
+          try { json = txt ? JSON.parse(txt) : null; } catch { json = { raw: txt }; }
 
-    log("No hay opener. Volviendo a return_to…");
-    setTimeout(()=>location.href = returnTo, 400);
-  } catch(e){
-    log("Error: " + (e?.message || String(e)));
-    setTimeout(()=>location.href = returnTo, 800);
-  }
-})();
-</script>
+          if (!r.ok) {
+            log("❌ Poll error HTTP " + r.status, json);
+            return null;
+          }
+          return json;
+        } catch (e) {
+          log("❌ Poll exception", { error: String(e) });
+          return null;
+        }
+      }
+
+      function computeOk(result) {
+        const integ = result?.integration;
+        // ✅ Éxito real: se creó/actualizó integración
+        if (integ?.uuid) return true;
+
+        // si no hay integración, y hay stage crítico o error => false
+        if (result?.stage === "exchange") return false;
+        if (result?.error) return false;
+
+        // default: si hay message sin integración, considerar false
+        return false;
+      }
+
+      async function loop() {
+        const elapsed = Date.now() - start;
+        if (elapsed > TIMEOUT_MS) {
+          log("⏱️ Timeout esperando resultado. Reintentá el flujo.");
+          // notificar al opener para que muestre error
+          try {
+            window.opener?.postMessage({
+              type: "HICHAT_WA_OAUTH_RESULT",
+              state,
+              ok: false,
+              stage: "timeout",
+              message: "Timeout esperando resultado del backend.",
+              result: null
+            }, "*");
+          } catch {}
+          return;
+        }
+
+        const data = await poll();
+
+        if (!data || !data.ready) {
+          log("Aún no está listo. Reintentando…");
+          setTimeout(loop, INTERVAL_MS);
+          return;
+        }
+
+        const result = data.result || {};
+        const ok = computeOk(result);
+
+        log("✅ Resultado recibido", { ok, result });
+
+        // postMessage al opener
+        try {
+          window.opener?.postMessage({
+            type: "HICHAT_WA_OAUTH_RESULT",
+            state,
+            ok,
+            result,
+            stage: result?.stage,
+            message: result?.message
+          }, "*");
+        } catch (e) {
+          log("⚠️ postMessage falló", { error: String(e) });
+        }
+
+        // redirigir
+        try {
+          if (returnTo) {
+            location.replace(returnTo);
+          }
+        } catch (e) {
+          log("⚠️ redirect falló", { error: String(e), returnTo });
+        }
+      }
+
+      loop();
+    })();
+  </script>
 </body>
 </html>
