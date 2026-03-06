@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>POC Meta OAuth</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 18px;
+      background: #0b1020;
+      color: #eaf0ff;
+    }
+
+    .card {
+      max-width: 980px;
+      margin: 0 auto;
+      background: #111a33;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #8ea0c8;
+      margin: 8px 0 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: #eaf0ff;
+      padding: 10px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: #1877f2;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,.12);
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    pre {
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      padding: 12px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .muted {
+      color: #8ea0c8;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid rgba(255,255,255,.12);
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>POC - Conectar Meta (Facebook + Instagram)</h2>
+    <p class="muted">
+      Flujo: pedir config al backend → abrir popup Meta → callback → bridge → poll → resultado.
+    </p>
+
+    <div class="row">
+      <div>
+        <label>API Base</label>
+        <input id="apiBase" value="http://localhost:3001/hi-Instagram-Api" />
+      </div>
+      <div>
+        <label>Estado</label>
+        <input id="status" value="—" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Bearer Backoffice</label>
+        <input id="boBearer" placeholder="Pegá el token de backoffice" />
+      </div>
+      <div>
+        <label>return_to</label>
+        <input id="returnTo" value="/integrations" />
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>Datos de empresa</h3>
+
+    <div class="row">
+      <div>
+        <label>company_token</label>
+        <textarea id="company_token" placeholder="Pegá el company_token..."></textarea>
+      </div>
+      <div>
+        <label>state</label>
+        <input id="state" disabled />
+        <label style="margin-top:10px;">dialog_url</label>
+        <textarea id="dialog_url" disabled></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>bridge_url</label>
+        <textarea id="bridge_url" disabled></textarea>
+      </div>
+      <div>
+        <label>provider</label>
+        <input id="provider" disabled />
+        <label style="margin-top:10px;">mode</label>
+        <input id="mode" disabled />
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+      <button id="btnGetConfig">1) Obtener botón Meta</button>
+      <button id="btnOpenMeta" disabled>2) Abrir Meta</button>
+      <button class="secondary" id="btnClear">Borrar localStorage</button>
+    </div>
+
+    <hr />
+
+    <h3>Resultado Facebook</h3>
+    <div class="row">
+      <div>
+        <label>facebook.integration.uuid</label>
+        <input id="fb_integration_uuid" disabled />
+      </div>
+      <div>
+        <label>facebook.integration.status</label>
+        <input id="fb_integration_status" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>facebook.page_id</label>
+        <input id="fb_page_id" disabled />
+      </div>
+      <div>
+        <label>facebook.account_id</label>
+        <input id="fb_account_id" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>facebook.name</label>
+        <input id="fb_name" disabled />
+      </div>
+      <div>
+        <label>facebook.business_id</label>
+        <input id="fb_business_id" disabled />
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>Resultado Instagram</h3>
+    <div class="row">
+      <div>
+        <label>instagram.integration.uuid</label>
+        <input id="ig_integration_uuid" disabled />
+      </div>
+      <div>
+        <label>instagram.integration.status</label>
+        <input id="ig_integration_status" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>instagram.page_id (page FB asociada)</label>
+        <input id="ig_page_id" disabled />
+      </div>
+      <div>
+        <label>instagram.account_id (IG ID)</label>
+        <input id="ig_account_id" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>instagram.username</label>
+        <input id="ig_username" disabled />
+      </div>
+      <div>
+        <label>instagram.name</label>
+        <input id="ig_name" disabled />
+      </div>
+    </div>
+
+    <hr />
+
+    <h3>Estado general</h3>
+    <div class="row">
+      <div>
+        <label>stage</label>
+        <input id="stage" disabled />
+      </div>
+      <div>
+        <label>message</label>
+        <input id="message" disabled />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>token_type</label>
+        <input id="token_type" disabled />
+      </div>
+      <div>
+        <label>expires_in</label>
+        <input id="expires_in" disabled />
+      </div>
+    </div>
+
+    <h3 style="margin-top:16px;">Debug</h3>
+    <pre id="log"></pre>
+  </div>
+
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const LS_KEY = "meta_oauth_poc_v1";
+
+      let lastConfig = null;
+
+      function log(msg, obj) {
+        const line =
+          `[${new Date().toISOString()}] ${msg}` +
+          (obj ? "\n" + JSON.stringify(obj, null, 2) : "");
+        $("log").textContent += ($("log").textContent ? "\n\n" : "") + line;
+      }
+
+      function setStatus(text, ok = null) {
+        $("status").value = text;
+        $("status").style.color =
+          ok === true ? "#1ee3a8" : ok === false ? "#ff5c7a" : "#eaf0ff";
+      }
+
+      function openCenteredPopup(url, w, h) {
+        const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+        const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth;
+        const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
+        const left = ((width / 2) - (w / 2)) + dualScreenLeft;
+        const top = ((height / 2) - (h / 2)) + dualScreenTop;
+        const features = `scrollbars=yes,width=${w},height=${h},top=${top},left=${left}`;
+        return window.open(url, "meta_oauth_popup", features);
+      }
+
+      function clearConfigUI() {
+        $("state").value = "";
+        $("dialog_url").value = "";
+        $("bridge_url").value = "";
+        $("provider").value = "";
+        $("mode").value = "";
+      }
+
+      function clearResultUI() {
+        $("fb_integration_uuid").value = "";
+        $("fb_integration_status").value = "";
+        $("fb_page_id").value = "";
+        $("fb_account_id").value = "";
+        $("fb_name").value = "";
+        $("fb_business_id").value = "";
+
+        $("ig_integration_uuid").value = "";
+        $("ig_integration_status").value = "";
+        $("ig_page_id").value = "";
+        $("ig_account_id").value = "";
+        $("ig_username").value = "";
+        $("ig_name").value = "";
+
+        $("stage").value = "";
+        $("message").value = "";
+        $("token_type").value = "";
+        $("expires_in").value = "";
+      }
+
+      function fillConfigUI(cfg) {
+        $("state").value = cfg?.state || "";
+        $("dialog_url").value = cfg?.dialog_url || "";
+        $("bridge_url").value = cfg?.bridge_url || "";
+        $("provider").value = cfg?.provider || "";
+        $("mode").value = cfg?.mode || "";
+      }
+
+      function fillResultUI(result) {
+        const integrations = result?.integrations || {};
+        const fb = result?.facebook || {};
+        const ig = result?.instagram || {};
+
+        const fbIntegration = integrations.facebook || {};
+        const igIntegration = integrations.instagram || {};
+
+        $("fb_integration_uuid").value = fbIntegration.uuid || "";
+        $("fb_integration_status").value = fbIntegration.status || "";
+        $("fb_page_id").value = fb.page_id || fbIntegration.page_id || "";
+        $("fb_account_id").value = fb.account_id || fbIntegration.account_id || "";
+        $("fb_name").value = fb.name || "";
+        $("fb_business_id").value = fbIntegration.business_id || "";
+
+        $("ig_integration_uuid").value = igIntegration.uuid || "";
+        $("ig_integration_status").value = igIntegration.status || "";
+        $("ig_page_id").value = ig.page_id || igIntegration.page_id || "";
+        $("ig_account_id").value = ig.account_id || igIntegration.account_id || "";
+        $("ig_username").value = ig.username || "";
+        $("ig_name").value = ig.name || "";
+
+        $("stage").value = result?.stage || "";
+        $("message").value = result?.message || "";
+        $("token_type").value = result?.token_type || "";
+        $("expires_in").value = result?.expires_in ?? "";
+
+        if (fbIntegration.uuid || igIntegration.uuid) {
+          setStatus("✅ Integraciones Meta creadas/actualizadas", true);
+        } else if (result?.stage || result?.message) {
+          setStatus("⚠️ Flujo completó con aviso", false);
+        }
+      }
+
+      function setMetaButtonEnabled(enabled) {
+        $("btnOpenMeta").disabled = !enabled;
+      }
+
+      async function postConfig() {
+        const apiBase = $("apiBase").value.trim().replace(/\/$/, "");
+        const url = apiBase + "/backoffice/meta/signup/config";
+
+        const companyToken = $("company_token").value.trim();
+        if (!companyToken) {
+          throw new Error("Falta company_token");
+        }
+
+        const body = {
+          company_token: companyToken,
+          return_to: $("returnTo").value.trim() || "/integrations"
+        };
+
+        const boBearer = $("boBearer").value.trim();
+
+        log("➡️ POST config", { url, body, hasAuth: !!boBearer });
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(boBearer ? { Authorization: "Bearer " + boBearer } : {})
+          },
+          body: JSON.stringify(body)
+        });
+
+        const txt = await response.text();
+        let json;
+        try {
+          json = txt ? JSON.parse(txt) : null;
+        } catch {
+          json = { raw: txt };
+        }
+
+        if (!response.ok) {
+          throw new Error(`Error POST config (${response.status}): ${JSON.stringify(json)}`);
+        }
+
+        if (!json?.dialog_url || !json?.state) {
+          throw new Error("El backend no devolvió dialog_url/state");
+        }
+
+        return json;
+      }
+
+      window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (!data || data.type !== "HICHAT_META_OAUTH_RESULT") return;
+
+        log("📩 postMessage recibido", data);
+
+        clearResultUI();
+
+        if (!data.ok) {
+          setStatus("❌ OAuth falló", false);
+          $("stage").value = data.stage || "unknown";
+          $("message").value = data.message || "Falló el flujo OAuth";
+          return;
+        }
+
+        const result = data.result || {};
+        fillResultUI(result);
+
+        try {
+          localStorage.setItem(
+            LS_KEY,
+            JSON.stringify({
+              config: lastConfig,
+              result,
+              createdAt: Date.now()
+            })
+          );
+        } catch {}
+      });
+
+      $("btnGetConfig").addEventListener("click", async () => {
+        try {
+          setStatus("Pidiendo config…", null);
+          clearResultUI();
+          setMetaButtonEnabled(false);
+
+          const cfg = await postConfig();
+          lastConfig = cfg;
+
+          fillConfigUI(cfg);
+          setMetaButtonEnabled(true);
+
+          log("✅ Config obtenida", cfg);
+          setStatus("✅ Config lista. Ya podés abrir Meta.", true);
+
+          try {
+            localStorage.setItem(
+              LS_KEY,
+              JSON.stringify({
+                config: cfg,
+                createdAt: Date.now()
+              })
+            );
+          } catch {}
+        } catch (e) {
+          log("❌ Error obteniendo config", { error: String(e) });
+          setStatus("❌ Error obteniendo config", false);
+          clearConfigUI();
+          setMetaButtonEnabled(false);
+        }
+      });
+
+      $("btnOpenMeta").addEventListener("click", () => {
+        try {
+          if (!lastConfig?.dialog_url) {
+            setStatus("⚠️ Primero obtené la config", false);
+            return;
+          }
+
+          log("➡️ OPEN popup dialog", {
+            dialogUrl: lastConfig.dialog_url,
+            bridge_url_expected: lastConfig.bridge_url,
+            state: lastConfig.state
+          });
+
+          const pop = openCenteredPopup(
+            lastConfig.dialog_url,
+            lastConfig.popup?.width || 520,
+            lastConfig.popup?.height || 720
+          );
+
+          if (!pop) {
+            setStatus("⚠️ Popup bloqueado", false);
+            return;
+          }
+
+          setStatus("Esperando autorización…", null);
+        } catch (e) {
+          log("❌ Error abriendo popup", { error: String(e) });
+          setStatus("❌ Error abriendo popup", false);
+        }
+      });
+
+      $("btnClear").addEventListener("click", () => {
+        localStorage.removeItem(LS_KEY);
+        lastConfig = null;
+        clearConfigUI();
+        clearResultUI();
+        setMetaButtonEnabled(false);
+        setStatus("🧹 localStorage borrado", null);
+        log("🧹 localStorage borrado");
+      });
+
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+
+          if (parsed?.config?.dialog_url) {
+            lastConfig = parsed.config;
+            fillConfigUI(lastConfig);
+            setMetaButtonEnabled(true);
+            setStatus("✅ Config recuperada. Ya podés abrir Meta.", true);
+            log("🔁 Config recuperada de localStorage", lastConfig);
+          }
+
+          if (parsed?.result) {
+            fillResultUI(parsed.result);
+            log("🔁 Resultado recuperado de localStorage", parsed.result);
+          }
+        }
+      } catch (e) {
+        log("⚠️ Error leyendo localStorage", { error: String(e) });
+      }
+    })();
+  </script>
+</body>
+</html>
