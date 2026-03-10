@@ -269,7 +269,8 @@
       <div class="results">
         <div class="resultBox">
           <h3>Facebook Result</h3>
-          <div class="field"><span class="k">Integration UUID</span><span class="v" id="fbIntegrationUuid">—</span></div>
+          <div class="field"><span class="k">Integration UUID</span><span class="v" id="fbIntegrationUuid">—</span>
+          </div>
           <div class="field"><span class="k">Status</span><span class="v" id="fbIntegrationStatus">—</span></div>
           <div class="field"><span class="k">Page ID</span><span class="v" id="fbPageId">—</span></div>
           <div class="field"><span class="k">Account ID</span><span class="v" id="fbAccountId">—</span></div>
@@ -279,7 +280,8 @@
 
         <div class="resultBox">
           <h3>Instagram Result</h3>
-          <div class="field"><span class="k">Integration UUID</span><span class="v" id="igIntegrationUuid">—</span></div>
+          <div class="field"><span class="k">Integration UUID</span><span class="v" id="igIntegrationUuid">—</span>
+          </div>
           <div class="field"><span class="k">Status</span><span class="v" id="igIntegrationStatus">—</span></div>
           <div class="field"><span class="k">Page ID</span><span class="v" id="igPageId">—</span></div>
           <div class="field"><span class="k">Account ID</span><span class="v" id="igAccountId">—</span></div>
@@ -565,7 +567,7 @@
         }
 
         if (result?.integrations?.facebook?.uuid || result?.integrations?.instagram?.uuid) {
-          setStatus("Facebook/Instagram connected successfully with Hi Chat Assistant. Go to them to test how it responds.", "success");
+          setStatus(`${provider} integration completed successfully.`, "success");
         } else {
           setStatus(`${provider} flow completed with warnings.`, "error");
         }

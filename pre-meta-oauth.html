@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Hi Chat - Conectar redes</title>
+    <title>Hi Chat - Preparar conexión Meta</title>
     <style>
         :root {
             --bg: #0b1020;
@@ -13,13 +13,13 @@
             --muted: #8ea0c8;
             --text: #eaf0ff;
             --primary: #1877f2;
+            --instagram: #d62976;
             --ok: #1ee3a8;
             --danger: #ff5c7a;
-            --instagram: #d62976;
         }
 
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         body {
@@ -39,7 +39,7 @@
 
         .wrap {
             width: 100%;
-            max-width: 980px;
+            max-width: 1080px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -84,7 +84,7 @@
             color: var(--muted);
             font-size: 15px;
             line-height: 1.6;
-            max-width: 46ch;
+            max-width: 48ch;
         }
 
         .review-box {
@@ -162,7 +162,7 @@
         }
 
         textarea {
-            min-height: 92px;
+            min-height: 90px;
             resize: vertical;
         }
 
@@ -174,11 +174,11 @@
             line-height: 1.4;
         }
 
-        .footer {
+        .actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 16px;
+            margin-top: 14px;
         }
 
         button {
@@ -203,10 +203,14 @@
         }
 
         .secondary {
-            background: rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .10);
         }
 
-        button:hover {
+        .ghost {
+            background: rgba(255, 255, 255, .08);
+        }
+
+        button:hover:not(:disabled) {
             transform: translateY(-1px);
         }
 
@@ -228,6 +232,45 @@
             align-items: center;
         }
 
+        .provider-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .provider-card {
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .035);
+            border: 1px solid rgba(255, 255, 255, .08);
+            padding: 14px;
+        }
+
+        .provider-card h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+        }
+
+        .provider-card p {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            color: #dbe8ff;
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
         .mini {
             margin-top: 14px;
             font-size: 13px;
@@ -235,12 +278,26 @@
             line-height: 1.55;
         }
 
+        pre {
+            margin-top: 16px;
+            background: rgba(0, 0, 0, .25);
+            border: 1px solid rgba(255, 255, 255, .10);
+            border-radius: 14px;
+            padding: 14px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 180px;
+            color: #d7e5ff;
+        }
+
         @media (max-width: 920px) {
             .wrap {
                 grid-template-columns: 1fr;
             }
 
-            .grid {
+            .grid,
+            .provider-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -258,15 +315,15 @@
                 <div class="eyebrow">Hi Chat · Integración Meta</div>
                 <h1>Preparar conexión de Facebook e Instagram</h1>
                 <p class="lead">
-                    Esta pantalla guarda el contexto previo de la demo y deja lista la siguiente vista para abrir
-                    el flujo oficial de autorización con Meta.
+                    Esta pantalla obtiene la configuración previa del flujo y deja lista la siguiente vista
+                    para abrir el OAuth oficial de Meta sin exponer datos innecesarios.
                 </p>
 
                 <div class="review-box">
                     <strong>Mensaje para reviewer</strong>
                     <span>
-                        Luego de este paso, se abre la pantalla de conexión donde se inicia el flujo OAuth oficial
-                        para vincular Facebook o Instagram con Hi Chat.
+                        Primero se obtiene la configuración del flujo de conexión. Luego, en la siguiente pantalla,
+                        se abren los accesos de Facebook e Instagram para completar la autorización oficial con Meta.
                     </span>
                 </div>
             </div>
@@ -275,7 +332,7 @@
         <section class="card">
             <h2 class="form-title">Configurar demo</h2>
             <p class="form-subtitle">
-                Ingresá los datos necesarios y continuá al flujo siguiente.
+                Pegá los datos necesarios, obtené la config de cada red y continuá.
             </p>
 
             <div class="grid">
@@ -284,11 +341,16 @@
                     <input id="returnTo" value="/integrations" />
                 </div>
 
+                <div class="field">
+                    <label for="apiBase">API Base</label>
+                    <input id="apiBase" value="http://localhost:3001/hi-Instagram-Api" />
+                </div>
+
                 <div class="field full">
                     <label for="companyToken">company_token</label>
                     <textarea id="companyToken" placeholder="Pegá aquí el company_token"></textarea>
                     <span class="hint">
-                        Se guarda en localStorage para reutilizarlo en la pantalla siguiente.
+                        Se usa para pedir la config de Facebook e Instagram antes de pasar al POC.
                     </span>
                 </div>
 
@@ -297,28 +359,43 @@
                     <input id="boBearer" placeholder="Pegá el bearer del backoffice" />
                 </div>
 
-                <div class="field">
-                    <label for="apiBase">API Base</label>
-                    <input id="apiBase" value="http://localhost:3001/hi-Instagram-Api" />
-                </div>
-
-                <div class="field">
+                <div class="field full">
                     <label for="nextPage">Página siguiente</label>
                     <input id="nextPage" value="./meta-oauth-poc-review.html" />
                 </div>
             </div>
 
-            <div class="footer">
-                <button class="primary" id="btnContinue">Continuar</button>
+            <div class="provider-grid">
+                <div class="provider-card">
+                    <h3>Facebook</h3>
+                    <p>Obtiene la config previa del flujo de Facebook y la deja guardada para la pantalla siguiente.</p>
+                    <button class="primary" id="btnPreloadFacebook">Obtener config Facebook</button>
+                    <div class="pill" id="fbPill">No cargado</div>
+                </div>
+
+                <div class="provider-card">
+                    <h3>Instagram</h3>
+                    <p>Obtiene la config previa del flujo de Instagram y la deja guardada para la pantalla siguiente.
+                    </p>
+                    <button class="instagram" id="btnPreloadInstagram">Obtener config Instagram</button>
+                    <div class="pill" id="igPill">No cargado</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="ghost" id="btnContinue">Continuar al POC</button>
                 <button class="secondary" id="btnClear">Limpiar</button>
             </div>
 
             <div class="status" id="status">
-                Completá los datos y continuá al siguiente paso.
+                Cargá los datos y obtené la config de Facebook o Instagram.
             </div>
 
+            <pre id="log"></pre>
+
             <div class="mini">
-                Para el video alcanza con mostrar esta pantalla, pegar los datos y pasar al flujo de OAuth.
+                Para el video: mostrás esta pantalla, obtenés la config, y después pasás al POC donde solo quedan los
+                botones de login.
             </div>
         </section>
     </div>
@@ -326,7 +403,26 @@
     <script>
         (function () {
             const STORAGE_KEY = 'hichat_meta_reviewer_context_v1';
+
             const $ = (id) => document.getElementById(id);
+
+            const PROVIDERS = {
+                facebook: {
+                    endpoint: '/backoffice/meta/facebook/signup/config',
+                    pillId: 'fbPill'
+                },
+                instagram: {
+                    endpoint: '/backoffice/meta/instagram/signup/config',
+                    pillId: 'igPill'
+                }
+            };
+
+            function log(msg, obj) {
+                const line =
+                    `[${new Date().toISOString()}] ${msg}` +
+                    (obj ? '\n' + JSON.stringify(obj, null, 2) : '');
+                $('log').textContent += ($('log').textContent ? '\n\n' : '') + line;
+            }
 
             function setStatus(text, type) {
                 const el = $('status');
@@ -351,25 +447,46 @@
                 el.style.background = 'rgba(255,255,255,.04)';
             }
 
+            function setProviderLoaded(provider, loaded, text) {
+                $(PROVIDERS[provider].pillId).textContent = text || (loaded ? 'Cargado' : 'No cargado');
+            }
+
+            function getStoredContext() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    return raw ? JSON.parse(raw) : null;
+                } catch {
+                    return null;
+                }
+            }
+
             function getFormData() {
+                const existing = getStoredContext() || {};
+
                 return {
+                    ...existing,
                     oauth: {
+                        ...(existing.oauth || {}),
                         companyToken: $('companyToken').value.trim(),
                         boBearer: $('boBearer').value.trim(),
                         returnTo: $('returnTo').value.trim() || '/integrations',
                         apiBase: $('apiBase').value.trim(),
-                        nextPage: $('nextPage').value.trim() || './meta-oauth-poc-review.html'
+                        nextPage: $('nextPage').value.trim() || './meta-oauth-poc-review.html',
+                        facebookConfig: existing?.oauth?.facebookConfig || null,
+                        instagramConfig: existing?.oauth?.instagramConfig || null
                     },
                     createdAt: Date.now()
                 };
             }
 
+            function saveContext(data) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+
             function hydrateFromStorage() {
                 try {
-                    const raw = localStorage.getItem(STORAGE_KEY);
-                    if (!raw) return;
-
-                    const parsed = JSON.parse(raw);
+                    const parsed = getStoredContext();
+                    if (!parsed) return;
 
                     $('companyToken').value = parsed?.oauth?.companyToken || '';
                     $('boBearer').value = parsed?.oauth?.boBearer || '';
@@ -377,13 +494,21 @@
                     $('apiBase').value = parsed?.oauth?.apiBase || 'http://localhost:3001/hi-Instagram-Api';
                     $('nextPage').value = parsed?.oauth?.nextPage || './meta-oauth-poc-review.html';
 
+                    if (parsed?.oauth?.facebookConfig?.dialog_url) {
+                        setProviderLoaded('facebook', true, 'Cargado');
+                    }
+
+                    if (parsed?.oauth?.instagramConfig?.dialog_url) {
+                        setProviderLoaded('instagram', true, 'Cargado');
+                    }
+
                     setStatus('Se recuperaron los datos guardados.', 'success');
                 } catch (error) {
                     setStatus('No se pudieron recuperar los datos previos.', 'error');
                 }
             }
 
-            function validate(data) {
+            function validateBase(data) {
                 if (!data.oauth.companyToken) {
                     return 'Falta el company_token.';
                 }
@@ -395,9 +520,89 @@
                 return null;
             }
 
+            async function fetchProviderConfig(provider) {
+                const data = getFormData();
+                const validationError = validateBase(data);
+
+                if (validationError) {
+                    setStatus(validationError, 'error');
+                    return;
+                }
+
+                const apiBase = data.oauth.apiBase.replace(/\/$/, '');
+                const url = apiBase + PROVIDERS[provider].endpoint;
+
+                const body = {
+                    company_token: data.oauth.companyToken,
+                    return_to: data.oauth.returnTo || '/integrations'
+                };
+
+                try {
+                    setStatus(`Obteniendo config de ${provider}...`);
+                    log(`POST config (${provider})`, {
+                        url,
+                        body: {
+                            company_token: '[hidden]',
+                            return_to: body.return_to
+                        },
+                        hasAuth: !!data.oauth.boBearer
+                    });
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(data.oauth.boBearer
+                                ? { Authorization: 'Bearer ' + data.oauth.boBearer }
+                                : {})
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    const txt = await response.text();
+                    let json;
+
+                    try {
+                        json = txt ? JSON.parse(txt) : null;
+                    } catch {
+                        json = { raw: txt };
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`POST config error (${provider}) [${response.status}]: ${JSON.stringify(json)}`);
+                    }
+
+                    if (!json?.dialog_url || !json?.state) {
+                        throw new Error(`Missing dialog_url/state for ${provider}`);
+                    }
+
+                    const nextData = getFormData();
+                    nextData.oauth[provider + 'Config'] = json;
+
+                    saveContext(nextData);
+                    setProviderLoaded(provider, true, 'Cargado');
+
+                    log(`Config cargada (${provider})`, {
+                        provider: json?.provider,
+                        mode: json?.mode,
+                        state: json?.state,
+                        bridge_url: json?.bridge_url
+                    });
+
+                    setStatus(`Config de ${provider} obtenida correctamente.`, 'success');
+                } catch (error) {
+                    setProviderLoaded(provider, false, 'Error');
+                    log(`Error al obtener config (${provider})`, { error: String(error) });
+                    setStatus(`No se pudo obtener la config de ${provider}.`, 'error');
+                }
+            }
+
+            $('btnPreloadFacebook').addEventListener('click', () => fetchProviderConfig('facebook'));
+            $('btnPreloadInstagram').addEventListener('click', () => fetchProviderConfig('instagram'));
+
             $('btnContinue').addEventListener('click', () => {
                 const data = getFormData();
-                const validationError = validate(data);
+                const validationError = validateBase(data);
 
                 if (validationError) {
                     setStatus(validationError, 'error');
@@ -405,8 +610,8 @@
                 }
 
                 try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                    setStatus('Datos guardados correctamente. Redirigiendo…', 'success');
+                    saveContext(data);
+                    setStatus('Datos guardados. Redirigiendo al POC…', 'success');
 
                     setTimeout(() => {
                         window.location.href = data.oauth.nextPage;
@@ -423,6 +628,9 @@
                 $('returnTo').value = '/integrations';
                 $('apiBase').value = 'http://localhost:3001/hi-Instagram-Api';
                 $('nextPage').value = './meta-oauth-poc-review.html';
+                $('log').textContent = '';
+                setProviderLoaded('facebook', false, 'No cargado');
+                setProviderLoaded('instagram', false, 'No cargado');
                 setStatus('Datos borrados.', 'success');
             });
 
