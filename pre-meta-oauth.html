@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hi Chat - Conectar redes</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --border:rgba(255,255,255,.10);
+      --muted:#8ea0c8;
+      --text:#eaf0ff;
+      --primary:#1877f2;
+      --primary-2:#6aa8ff;
+      --ok:#1ee3a8;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(24,119,242,.18), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(214,41,118,.14), transparent 22%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:20px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,.28);
+    }
+
+    .hero{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:100%;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      color:#c8d8ff;
+      font-size:13px;
+      font-weight:700;
+      width:max-content;
+      margin-bottom:18px;
+    }
+
+    h1{
+      margin:0 0 12px;
+      font-size:38px;
+      line-height:1.05;
+    }
+
+    .lead{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.6;
+      max-width:52ch;
+    }
+
+    .steps{
+      display:grid;
+      gap:12px;
+      margin-top:26px;
+    }
+
+    .step{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .step-badge{
+      width:28px;
+      height:28px;
+      min-width:28px;
+      border-radius:999px;
+      background:rgba(24,119,242,.2);
+      border:1px solid rgba(106,168,255,.35);
+      color:#dbe8ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .step h3{
+      margin:0 0 4px;
+      font-size:15px;
+    }
+
+    .step p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .review-box{
+      margin-top:24px;
+      padding:16px;
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(30,227,168,.08), rgba(30,227,168,.03));
+      border:1px solid rgba(30,227,168,.18);
+    }
+
+    .review-box strong{
+      display:block;
+      margin-bottom:6px;
+      color:#dffef2;
+    }
+
+    .review-box span{
+      color:#b9d9cc;
+      font-size:14px;
+      line-height:1.5;
+      display:block;
+    }
+
+    .form-title{
+      margin:0 0 6px;
+      font-size:24px;
+    }
+
+    .form-subtitle{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.035);
+      color:var(--text);
+      padding:12px 13px;
+      outline:none;
+      transition:.18s ease;
+    }
+
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(106,168,255,.75);
+      box-shadow:0 0 0 4px rgba(24,119,242,.14);
+    }
+
+    textarea{
+      min-height:96px;
+      resize:vertical;
+    }
+
+    .hint{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .footer{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    button{
+      border:0;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+      transition:.18s ease;
+    }
+
+    .primary{
+      background:linear-gradient(180deg, var(--primary), #1463c9);
+      box-shadow:0 10px 28px rgba(24,119,242,.24);
+    }
+
+    .primary:hover{
+      transform:translateY(-1px);
+    }
+
+    .secondary{
+      background:rgba(255,255,255,.1);
+    }
+
+    .secondary:hover{
+      background:rgba(255,255,255,.15);
+    }
+
+    .mini{
+      margin-top:14px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .status{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      color:#d8e6ff;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+    }
+
+    @media (max-width: 920px){
+      .wrap{
+        grid-template-columns:1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      h1{
+        font-size:30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card hero">
+      <div>
+        <div class="eyebrow">Hi Chat · Integración Meta</div>
+        <h1>Conectá Facebook e Instagram de forma segura</h1>
+        <p class="lead">
+          Esta pantalla simula el paso previo dentro del producto antes de iniciar el flujo oficial
+          de autorización con Meta. El objetivo es contextualizar el negocio, el usuario que realiza
+          la conexión y el destino de la integración.
+        </p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-badge">1</div>
+            <div>
+              <h3>Identificación del usuario</h3>
+              <p>Registramos quién está iniciando el proceso y para qué empresa lo hace.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-badge">2</div>
+            <div>
+              <h3>Conexión mediante OAuth</h3>
+              <p>Luego se abre el flujo oficial de Meta para autorizar permisos y vincular activos.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-badge">3</div>
+            <div>
+              <h3>Obtención de identificadores necesarios</h3>
+              <p>Con permisos como <strong>pages_show_list</strong> se puede resolver la página y la cuenta de Instagram asociada para operar con Hi Chat.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-box">
+          <strong>Mensaje para reviewer</strong>
+          <span>
+            En la siguiente pantalla se muestra el flujo donde, luego de la autorización,
+            se obtiene la página conectada y la cuenta de Instagram asociada para integrarlas con Hi Chat.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="form-title">Preparar conexión</h2>
+      <p class="form-subtitle">
+        Completá estos datos de demostración y continuá al flujo de conexión con Meta.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="fullName">Nombre del usuario</label>
+          <input id="fullName" placeholder="Ej: Juan Pérez" />
+        </div>
+
+        <div class="field">
+          <label for="username">Username / identificador visible</label>
+          <input id="username" placeholder="Ej: juan.perez" />
+        </div>
+
+        <div class="field">
+          <label for="companyName">Empresa</label>
+          <input id="companyName" placeholder="Ej: Demo Store" />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" placeholder="Ej: juan@empresa.com" />
+        </div>
+
+        <div class="field full">
+          <label for="companyToken">company_token</label>
+          <textarea id="companyToken" placeholder="Pegá aquí el company_token que se usará en el flujo siguiente"></textarea>
+          <span class="hint">
+            Este valor se reutiliza automáticamente en la pantalla siguiente para no exponerlo de manera innecesaria durante la demo.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="boBearer">Bearer Backoffice</label>
+          <input id="boBearer" placeholder="Pegá el bearer del backoffice" />
+        </div>
+
+        <div class="field">
+          <label for="returnTo">return_to</label>
+          <input id="returnTo" value="/integrations" />
+        </div>
+
+        <div class="field">
+          <label for="apiBase">API Base</label>
+          <input id="apiBase" value="http://localhost:3001/hi-Instagram-Api" />
+        </div>
+
+        <div class="field">
+          <label for="nextPage">Página siguiente</label>
+          <input id="nextPage" value="./meta-oauth-poc-review.html" />
+        </div>
+      </div>
+
+      <div class="footer">
+        <button class="primary" id="btnContinue">Continuar a conexión con Meta</button>
+        <button class="secondary" id="btnClear">Limpiar datos guardados</button>
+      </div>
+
+      <div class="status" id="status">
+        Completá los datos y continuá al siguiente paso.
+      </div>
+
+      <div class="mini">
+        Recomendación para el video: mostrar primero esta pantalla, completar datos del usuario,
+        y luego avanzar a la pantalla de OAuth donde se visualiza el flujo de conexión.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'hichat_meta_reviewer_context_v1';
+
+      const $ = (id) => document.getElementById(id);
+
+      function setStatus(text, type) {
+        const el = $('status');
+        el.textContent = text;
+
+        if (type === 'error') {
+          el.style.borderColor = 'rgba(255,92,122,.28)';
+          el.style.color = '#ffd1db';
+          el.style.background = 'rgba(255,92,122,.08)';
+          return;
+        }
+
+        if (type === 'success') {
+          el.style.borderColor = 'rgba(30,227,168,.28)';
+          el.style.color = '#dffef2';
+          el.style.background = 'rgba(30,227,168,.08)';
+          return;
+        }
+
+        el.style.borderColor = 'rgba(255,255,255,.08)';
+        el.style.color = '#d8e6ff';
+        el.style.background = 'rgba(255,255,255,.04)';
+      }
+
+      function getFormData() {
+        return {
+          user: {
+            fullName: $('fullName').value.trim(),
+            username: $('username').value.trim(),
+            companyName: $('companyName').value.trim(),
+            email: $('email').value.trim(),
+          },
+          oauth: {
+            companyToken: $('companyToken').value.trim(),
+            boBearer: $('boBearer').value.trim(),
+            returnTo: $('returnTo').value.trim() || '/integrations',
+            apiBase: $('apiBase').value.trim(),
+            nextPage: $('nextPage').value.trim() || './meta-oauth-poc-review.html',
+          },
+          createdAt: Date.now(),
+        };
+      }
+
+      function hydrateFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+
+          const parsed = JSON.parse(raw);
+
+          $('fullName').value = parsed?.user?.fullName || '';
+          $('username').value = parsed?.user?.username || '';
+          $('companyName').value = parsed?.user?.companyName || '';
+          $('email').value = parsed?.user?.email || '';
+
+          $('companyToken').value = parsed?.oauth?.companyToken || '';
+          $('boBearer').value = parsed?.oauth?.boBearer || '';
+          $('returnTo').value = parsed?.oauth?.returnTo || '/integrations';
+          $('apiBase').value = parsed?.oauth?.apiBase || 'http://localhost:3001/hi-Instagram-Api';
+          $('nextPage').value = parsed?.oauth?.nextPage || './meta-oauth-poc-review.html';
+
+          setStatus('Se recuperaron los datos guardados para la demo.', 'success');
+        } catch (error) {
+          setStatus('No se pudieron recuperar los datos previos.', 'error');
+        }
+      }
+
+      function validate(data) {
+        if (!data.user.username) {
+          return 'Falta el username del usuario.';
+        }
+
+        if (!data.user.companyName) {
+          return 'Falta el nombre de la empresa.';
+        }
+
+        if (!data.oauth.companyToken) {
+          return 'Falta el company_token.';
+        }
+
+        if (!data.oauth.apiBase) {
+          return 'Falta la API Base.';
+        }
+
+        return null;
+      }
+
+      $('btnContinue').addEventListener('click', () => {
+        const data = getFormData();
+        const validationError = validate(data);
+
+        if (validationError) {
+          setStatus(validationError, 'error');
+          return;
+        }
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          setStatus('Datos guardados correctamente. Redirigiendo al flujo de Meta…', 'success');
+
+          setTimeout(() => {
+            window.location.href = data.oauth.nextPage;
+          }, 350);
+        } catch (error) {
+          setStatus('No se pudieron guardar los datos en localStorage.', 'error');
+        }
+      });
+
+      $('btnClear').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        $('fullName').value = '';
+        $('username').value = '';
+        $('companyName').value = '';
+        $('email').value = '';
+        $('companyToken').value = '';
+        $('boBearer').value = '';
+        $('returnTo').value = '/integrations';
+        $('apiBase').value = 'http://localhost:3001/hi-Instagram-Api';
+        $('nextPage').value = './meta-oauth-poc-review.html';
+        setStatus('Datos borrados.', 'success');
+      });
+
+      hydrateFromStorage();
+    })();
+  </script>
+</body>
+</html>
