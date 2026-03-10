@@ -4,21 +4,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hi Chat - Meta Connection</title>
+  <title>Hi Chat - Meta OAuth POC</title>
   <style>
     :root {
       --bg: #0b1020;
-      --bg-soft: #111a33;
+      --panel: #111a33;
       --card: rgba(255, 255, 255, .04);
-      --card-2: rgba(255, 255, 255, .03);
       --border: rgba(255, 255, 255, .1);
-      --border-soft: rgba(255, 255, 255, .08);
       --text: #eaf0ff;
       --muted: #8ea0c8;
       --primary: #1877f2;
       --instagram: #d62976;
-      --success: #1ee3a8;
-      --danger: #ff5c7a;
       --shadow: 0 18px 50px rgba(0, 0, 0, .28);
     }
 
@@ -27,9 +23,9 @@
     }
 
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       margin: 0;
       padding: 20px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background:
         radial-gradient(circle at top right, rgba(24, 119, 242, .16), transparent 24%),
         radial-gradient(circle at bottom left, rgba(214, 41, 118, .12), transparent 22%),
@@ -37,32 +33,27 @@
       color: var(--text);
     }
 
-    .shell {
-      max-width: 1200px;
+    .wrap {
+      max-width: 1000px;
       margin: 0 auto;
     }
 
-    .hero {
-      background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .03));
+    .hero,
+    .card {
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
       box-shadow: var(--shadow);
     }
 
-    .hero-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
+    .hero {
+      padding: 20px;
+      margin-bottom: 16px;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
       padding: 7px 12px;
       border-radius: 999px;
       background: rgba(255, 255, 255, .08);
@@ -74,141 +65,50 @@
 
     h1 {
       margin: 0 0 8px;
-      font-size: 30px;
-      line-height: 1.08;
+      font-size: 28px;
+      line-height: 1.1;
     }
 
     .hero p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.6;
-      max-width: 70ch;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(24, 119, 242, .14);
-      color: #dbe8ff;
-      font-size: 12px;
-      font-weight: 800;
-      border: 1px solid rgba(106, 168, 255, .28);
-      white-space: nowrap;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      margin-top: 18px;
-    }
-
-    .mini-card {
-      background: var(--card);
-      border: 1px solid var(--border-soft);
-      border-radius: 14px;
-      padding: 14px;
-    }
-
-    .mini-card h3 {
-      margin: 0 0 8px;
-      font-size: 15px;
-    }
-
-    .mini-card p {
-      margin: 0;
-      font-size: 14px;
-      color: var(--muted);
+      line-height: 1.55;
     }
 
     .card {
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      border-radius: 18px;
       padding: 18px;
-      box-shadow: var(--shadow);
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .row-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .two-cards {
+    .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin-top: 16px;
+      margin-bottom: 18px;
     }
 
     .subcard {
-      background: var(--card-2);
-      border: 1px solid var(--border-soft);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, .08);
       border-radius: 16px;
       padding: 16px;
     }
 
-    .subcard h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-    }
-
-    .section-title {
-      margin: 0 0 4px;
+    .subcard h2 {
+      margin: 0 0 8px;
       font-size: 20px;
     }
 
-    .section-subtitle {
-      margin: 0 0 14px;
+    .subcard p {
+      margin: 0 0 12px;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.5;
     }
 
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin: 8px 0 6px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, .12);
-      background: rgba(255, 255, 255, .03);
-      color: var(--text);
-      padding: 11px 12px;
-      outline: none;
-      transition: .18s ease;
-    }
-
-    input[disabled],
-    textarea[disabled] {
-      opacity: 1;
-      color: #d9e5ff;
-      background: rgba(255, 255, 255, .02);
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
     button {
@@ -216,22 +116,22 @@
       border-radius: 12px;
       padding: 11px 15px;
       cursor: pointer;
-      background: var(--primary);
       color: #fff;
       font-weight: 800;
       transition: .18s ease;
+      background: var(--primary);
     }
 
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
+    button.instagram {
+      background: var(--instagram);
     }
 
     button.secondary {
       background: rgba(255, 255, 255, .12);
     }
 
-    button.instagram {
-      background: var(--instagram);
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
     }
 
     button:disabled {
@@ -240,15 +140,20 @@
       transform: none;
     }
 
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 14px;
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      color: #dbe8ff;
+      font-size: 12px;
+      font-weight: 800;
     }
 
-    .status-box {
-      margin-top: 12px;
+    .statusBox {
+      margin-bottom: 16px;
       border-radius: 14px;
       padding: 14px;
       background: rgba(255, 255, 255, .04);
@@ -257,75 +162,46 @@
       line-height: 1.5;
     }
 
-    .info-grid {
+    .results {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
     }
 
-    .info-tile {
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, .035);
+    .resultBox {
+      background: rgba(255, 255, 255, .03);
       border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 16px;
+      padding: 16px;
     }
 
-    .info-tile .k {
+    .resultBox h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field .k {
       display: block;
-      color: var(--muted);
       font-size: 12px;
-      margin-bottom: 6px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 700;
     }
 
-    .info-tile .v {
-      font-size: 15px;
-      font-weight: 700;
+    .field .v {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
       word-break: break-word;
     }
 
-    .review-note {
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(24, 119, 242, .08), rgba(24, 119, 242, .03));
-      border: 1px solid rgba(106, 168, 255, .18);
-      color: #dbe8ff;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    details.tech-box {
-      margin-top: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, .08);
-      background: rgba(255, 255, 255, .025);
-      overflow: hidden;
-    }
-
-    details.tech-box summary {
-      cursor: pointer;
-      list-style: none;
-      padding: 14px 16px;
-      font-weight: 800;
-      color: #dbe8ff;
-      user-select: none;
-    }
-
-    details.tech-box summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .tech-inner {
-      padding: 0 16px 16px;
-    }
-
-    hr {
-      border: 0;
-      border-top: 1px solid rgba(255, 255, 255, .12);
-      margin: 18px 0;
-    }
-
     pre {
+      margin: 0;
       background: rgba(0, 0, 0, .25);
       border: 1px solid rgba(255, 255, 255, .1);
       border-radius: 14px;
@@ -333,303 +209,86 @@
       overflow: auto;
       white-space: pre-wrap;
       word-break: break-word;
-      min-height: 180px;
+      min-height: 220px;
       color: #d7e5ff;
     }
 
-    .muted {
-      color: var(--muted);
-    }
+    @media (max-width: 860px) {
 
-    .hidden {
-      display: none !important;
-    }
-
-    @media (max-width: 980px) {
-
-      .hero-grid,
-      .row,
-      .row-3,
-      .two-cards,
-      .info-grid {
+      .grid,
+      .results {
         grid-template-columns: 1fr;
       }
 
       h1 {
-        font-size: 26px;
+        font-size: 24px;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="shell">
+  <div class="wrap">
     <section class="hero">
-      <div class="hero-top">
-        <div>
-          <div class="eyebrow">Hi Chat · Meta Integration Review</div>
-          <h1>Connect Facebook and Instagram to Hi Chat</h1>
-          <p id="reviewSubtitle">
-            This screen shows the official Meta authorization flow used to retrieve the required identifiers and link
-            assets to Hi Chat.
-          </p>
-        </div>
-        <div class="hero-badge" id="activeFlowBadge">No active flow</div>
-      </div>
-
-      <div class="hero-grid">
-        <div class="mini-card">
-          <h3>Flow context</h3>
-          <p>
-            Hi Chat requires permissions such as <strong>pages_show_list</strong> to retrieve the connected Facebook
-            Page,
-            obtain its identifier, and resolve the linked Instagram account that will be integrated into the platform.
-          </p>
-        </div>
-        <div class="mini-card">
-          <h3>Current user</h3>
-          <p id="userContextText">
-            Preparing user context…
-          </p>
-        </div>
-      </div>
+      <div class="eyebrow">Hi Chat · Meta OAuth POC</div>
+      <h1>Connect Facebook and Instagram</h1>
+      <p>Reviewer flow with preloaded config. Just click the provider and open the official Meta popup.</p>
     </section>
 
     <section class="card">
-      <h2 class="section-title">Connection setup</h2>
-      <p class="section-subtitle">
-        The reviewer-facing screen is intentionally sanitized. Sensitive values are preloaded internally and never shown
-        on screen.
-      </p>
+      <div class="statusBox" id="statusBox">Waiting for action.</div>
 
-      <div class="row">
-        <div>
-          <label>General status</label>
-          <input id="status" value="—" disabled />
-        </div>
-        <div>
-          <label>Last received provider</label>
-          <input id="result_provider" disabled />
-          <label style="margin-top:10px;">Last received state</label>
-          <input id="result_state" disabled />
-        </div>
-      </div>
-
-      <div class="review-note">
-        During this demonstration, the official Meta flow will be requested. Once the connection is authorized,
-        Hi Chat will identify the connected Facebook Page and the linked Instagram account in order to complete the
-        integration.
-      </div>
-
-      <div class="two-cards">
+      <div class="grid">
         <div class="subcard">
-          <h3>Facebook</h3>
-          <p class="muted" style="margin:0 0 10px;">Get the configuration and open the Facebook connection flow.</p>
+          <h2>Facebook</h2>
+          <p>Open the Facebook OAuth flow.</p>
 
           <div class="actions">
-            <button id="btnGetFacebookConfig">1) Get Facebook config</button>
-            <button id="btnOpenFacebook" disabled>2) Open Facebook</button>
+            <button id="btnOpenFacebook" disabled>Login with Facebook</button>
           </div>
 
-          <details class="tech-box">
-            <summary>View Facebook technical details</summary>
-            <div class="tech-inner">
-              <div class="row">
-                <div>
-                  <label>facebook.state</label>
-                  <input id="fb_state" disabled />
-                </div>
-                <div>
-                  <label>facebook.mode</label>
-                  <input id="fb_mode" disabled />
-                </div>
-              </div>
-
-              <label>facebook.dialog_url</label>
-              <textarea id="fb_dialog_url" disabled></textarea>
-
-              <label>facebook.bridge_url</label>
-              <textarea id="fb_bridge_url" disabled></textarea>
-            </div>
-          </details>
+          <div class="pill" id="fbPill">Not ready</div>
         </div>
 
         <div class="subcard">
-          <h3>Instagram</h3>
-          <p class="muted" style="margin:0 0 10px;">Get the configuration and open the Instagram connection flow.</p>
+          <h2>Instagram</h2>
+          <p>Open the Instagram OAuth flow.</p>
 
           <div class="actions">
-            <button class="instagram" id="btnGetInstagramConfig">1) Get Instagram config</button>
-            <button class="instagram" id="btnOpenInstagram" disabled>2) Open Instagram</button>
+            <button class="instagram" id="btnOpenInstagram" disabled>Login with Instagram</button>
           </div>
 
-          <details class="tech-box">
-            <summary>View Instagram technical details</summary>
-            <div class="tech-inner">
-              <div class="row">
-                <div>
-                  <label>instagram.state</label>
-                  <input id="ig_state" disabled />
-                </div>
-                <div>
-                  <label>instagram.mode</label>
-                  <input id="ig_mode" disabled />
-                </div>
-              </div>
-
-              <label>instagram.dialog_url</label>
-              <textarea id="ig_dialog_url" disabled></textarea>
-
-              <label>instagram.bridge_url</label>
-              <textarea id="ig_bridge_url" disabled></textarea>
-            </div>
-          </details>
+          <div class="pill" id="igPill">Not ready</div>
         </div>
       </div>
 
-      <hr />
-
-      <h2 class="section-title">Integration result</h2>
-      <p class="section-subtitle">
-        Once authorization is completed, the connected assets and the final process state will be displayed below.
-      </p>
-
-      <div class="two-cards">
-        <div class="subcard">
-          <h3>Facebook result</h3>
-          <div class="row">
-            <div>
-              <label>facebook.integration.uuid</label>
-              <input id="fb_integration_uuid" disabled />
-            </div>
-            <div>
-              <label>facebook.integration.status</label>
-              <input id="fb_integration_status" disabled />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>facebook.page_id</label>
-              <input id="fb_page_id" disabled />
-            </div>
-            <div>
-              <label>facebook.account_id</label>
-              <input id="fb_account_id" disabled />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>facebook.name</label>
-              <input id="fb_name" disabled />
-            </div>
-            <div>
-              <label>facebook.business_id</label>
-              <input id="fb_business_id" disabled />
-            </div>
-          </div>
-        </div>
-
-        <div class="subcard">
-          <h3>Instagram result</h3>
-          <div class="row">
-            <div>
-              <label>instagram.integration.uuid</label>
-              <input id="ig_integration_uuid" disabled />
-            </div>
-            <div>
-              <label>instagram.integration.status</label>
-              <input id="ig_integration_status" disabled />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>instagram.page_id (linked Facebook Page)</label>
-              <input id="ig_page_id" disabled />
-            </div>
-            <div>
-              <label>instagram.account_id (IG ID)</label>
-              <input id="ig_account_id" disabled />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>instagram.username</label>
-              <input id="ig_username" disabled />
-            </div>
-            <div>
-              <label>instagram.name</label>
-              <input id="ig_name" disabled />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr />
-
-      <h2 class="section-title">General status</h2>
-
-      <div class="row-3">
-        <div>
-          <label>stage</label>
-          <input id="stage" disabled />
-        </div>
-        <div>
-          <label>message</label>
-          <input id="message" disabled />
-        </div>
-        <div>
-          <label>provider</label>
-          <input id="provider" disabled />
-        </div>
-      </div>
-
-      <details class="tech-box">
-        <summary>View general technical details</summary>
-        <div class="tech-inner">
-          <div class="row">
-            <div>
-              <label>token_type</label>
-              <input id="token_type" disabled />
-            </div>
-            <div>
-              <label>expires_in</label>
-              <input id="expires_in" disabled />
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <div class="actions">
+      <div class="actions" style="margin-bottom:16px;">
         <button class="secondary" id="btnClear">Clear local state</button>
       </div>
 
-      <div class="status-box" id="statusMessageBox">
-        Waiting for user interaction.
+      <div class="results">
+        <div class="resultBox">
+          <h3>Facebook Result</h3>
+          <div class="field"><span class="k">Integration UUID</span><span class="v" id="fbIntegrationUuid">—</span></div>
+          <div class="field"><span class="k">Status</span><span class="v" id="fbIntegrationStatus">—</span></div>
+          <div class="field"><span class="k">Page ID</span><span class="v" id="fbPageId">—</span></div>
+          <div class="field"><span class="k">Account ID</span><span class="v" id="fbAccountId">—</span></div>
+          <div class="field"><span class="k">Name</span><span class="v" id="fbName">—</span></div>
+          <div class="field"><span class="k">Business ID</span><span class="v" id="fbBusinessId">—</span></div>
+        </div>
+
+        <div class="resultBox">
+          <h3>Instagram Result</h3>
+          <div class="field"><span class="k">Integration UUID</span><span class="v" id="igIntegrationUuid">—</span></div>
+          <div class="field"><span class="k">Status</span><span class="v" id="igIntegrationStatus">—</span></div>
+          <div class="field"><span class="k">Page ID</span><span class="v" id="igPageId">—</span></div>
+          <div class="field"><span class="k">Account ID</span><span class="v" id="igAccountId">—</span></div>
+          <div class="field"><span class="k">Username</span><span class="v" id="igUsername">—</span></div>
+          <div class="field"><span class="k">Name</span><span class="v" id="igName">—</span></div>
+        </div>
       </div>
 
-      <hr />
-
-      <h2 class="section-title">Reviewer-visible summary</h2>
-      <div class="info-grid">
-        <div class="info-tile">
-          <span class="k">User</span>
-          <span class="v" id="summaryUser">—</span>
-        </div>
-        <div class="info-tile">
-          <span class="k">Connected Page ID</span>
-          <span class="v" id="summaryPageId">—</span>
-        </div>
-        <div class="info-tile">
-          <span class="k">Connected Instagram ID</span>
-          <span class="v" id="summaryInstagramId">—</span>
-        </div>
-      </div>
-
-      <h2 class="section-title" style="margin-top:20px;">Logs</h2>
+      <h3 style="margin:0 0 12px;">Logs</h3>
       <pre id="log"></pre>
     </section>
   </div>
@@ -638,37 +297,9 @@
     (function () {
       const $ = (id) => document.getElementById(id);
 
-      const LS_KEY = "meta_oauth_poc_v4";
+      const LS_KEY = "meta_oauth_poc_minimal_v2";
       const REVIEW_CONTEXT_KEY = "hichat_meta_reviewer_context_v1";
       const POPUP_NAME = "meta_oauth_popup";
-
-      const PROVIDERS = {
-        facebook: {
-          name: "facebook",
-          configEndpoint: "/backoffice/meta/facebook/signup/config",
-          openButtonId: "btnOpenFacebook",
-          stateId: "fb_state",
-          modeId: "fb_mode",
-          dialogUrlId: "fb_dialog_url",
-          bridgeUrlId: "fb_bridge_url"
-        },
-        instagram: {
-          name: "instagram",
-          configEndpoint: "/backoffice/meta/instagram/signup/config",
-          openButtonId: "btnOpenInstagram",
-          stateId: "ig_state",
-          modeId: "ig_mode",
-          dialogUrlId: "ig_dialog_url",
-          bridgeUrlId: "ig_bridge_url"
-        }
-      };
-
-      const runtimeConfig = {
-        apiBase: "",
-        companyToken: "",
-        boBearer: "",
-        returnTo: "/integrations"
-      };
 
       const state = {
         configs: {
@@ -679,9 +310,19 @@
           facebook: null,
           instagram: null
         },
-        activeProvider: null,
         popupRef: null,
         popupMonitorInterval: null
+      };
+
+      const PROVIDERS = {
+        facebook: {
+          openButtonId: "btnOpenFacebook",
+          pillId: "fbPill"
+        },
+        instagram: {
+          openButtonId: "btnOpenInstagram",
+          pillId: "igPill"
+        }
       };
 
       function log(msg, obj) {
@@ -689,6 +330,29 @@
           `[${new Date().toISOString()}] ${msg}` +
           (obj ? "\n" + JSON.stringify(obj, null, 2) : "");
         $("log").textContent += ($("log").textContent ? "\n\n" : "") + line;
+      }
+
+      function setStatus(text, type = "neutral") {
+        const el = $("statusBox");
+        el.textContent = text;
+
+        if (type === "success") {
+          el.style.borderColor = "rgba(30,227,168,.25)";
+          el.style.background = "rgba(30,227,168,.08)";
+          el.style.color = "#dffef2";
+          return;
+        }
+
+        if (type === "error") {
+          el.style.borderColor = "rgba(255,92,122,.25)";
+          el.style.background = "rgba(255,92,122,.08)";
+          el.style.color = "#ffd6de";
+          return;
+        }
+
+        el.style.borderColor = "rgba(255,255,255,.08)";
+        el.style.background = "rgba(255,255,255,.04)";
+        el.style.color = "#d8e6ff";
       }
 
       function getReviewerContext() {
@@ -700,38 +364,10 @@
         }
       }
 
-      function setStatus(text, ok = null) {
-        $("status").value = text;
-        $("status").style.color =
-          ok === true ? "#1ee3a8" : ok === false ? "#ff5c7a" : "#eaf0ff";
-
-        const box = $("statusMessageBox");
-        box.textContent = text;
-
-        if (ok === true) {
-          box.style.borderColor = "rgba(30,227,168,.25)";
-          box.style.background = "rgba(30,227,168,.08)";
-          box.style.color = "#dffef2";
-          return;
-        }
-
-        if (ok === false) {
-          box.style.borderColor = "rgba(255,92,122,.25)";
-          box.style.background = "rgba(255,92,122,.08)";
-          box.style.color = "#ffd6de";
-          return;
-        }
-
-        box.style.borderColor = "rgba(255,255,255,.08)";
-        box.style.background = "rgba(255,255,255,.04)";
-        box.style.color = "#d8e6ff";
-      }
-
-      function setActiveFlow(provider) {
-        state.activeProvider = provider || null;
-        $("activeFlowBadge").textContent = provider
-          ? `Active flow: ${provider}`
-          : "No active flow";
+      function setProviderReady(provider, ready, text) {
+        const cfg = PROVIDERS[provider];
+        $(cfg.openButtonId).disabled = !ready;
+        $(cfg.pillId).textContent = text || (ready ? "Ready" : "Not ready");
       }
 
       function openCenteredPopup(url, w, h) {
@@ -760,7 +396,7 @@
             state.popupRef.close();
           }
         } catch (e) {
-          log("⚠️ Unable to close popup cleanly", { error: String(e) });
+          log("Popup close warning", { error: String(e) });
         }
 
         state.popupRef = null;
@@ -779,70 +415,41 @@
             if (state.popupRef.closed) {
               stopPopupMonitor();
               state.popupRef = null;
-              log("ℹ️ Popup was closed", { provider });
-
-              if (!$("result_provider").value) {
-                setStatus(`⚠️ The ${provider} popup was closed before a result was received`, false);
-              }
+              log("Popup closed", { provider });
             }
           } catch (e) {
-            log("⚠️ Popup monitor access warning", { error: String(e) });
+            log("Popup monitor warning", { error: String(e) });
           }
         }, 500);
       }
 
-      function setProviderButtonEnabled(provider, enabled) {
-        const cfg = PROVIDERS[provider];
-        $(cfg.openButtonId).disabled = !enabled;
+      function persistState() {
+        localStorage.setItem(
+          LS_KEY,
+          JSON.stringify({
+            configs: state.configs,
+            results: state.results,
+            createdAt: Date.now()
+          })
+        );
       }
 
-      function clearProviderConfigUI(provider) {
-        const cfg = PROVIDERS[provider];
-        $(cfg.stateId).value = "";
-        $(cfg.modeId).value = "";
-        $(cfg.dialogUrlId).value = "";
-        $(cfg.bridgeUrlId).value = "";
+      function clearFacebookResult() {
+        $("fbIntegrationUuid").textContent = "—";
+        $("fbIntegrationStatus").textContent = "—";
+        $("fbPageId").textContent = "—";
+        $("fbAccountId").textContent = "—";
+        $("fbName").textContent = "—";
+        $("fbBusinessId").textContent = "—";
       }
 
-      function clearAllConfigsUI() {
-        clearProviderConfigUI("facebook");
-        clearProviderConfigUI("instagram");
-      }
-
-      function clearResultUI() {
-        $("result_provider").value = "";
-        $("result_state").value = "";
-
-        $("fb_integration_uuid").value = "";
-        $("fb_integration_status").value = "";
-        $("fb_page_id").value = "";
-        $("fb_account_id").value = "";
-        $("fb_name").value = "";
-        $("fb_business_id").value = "";
-
-        $("ig_integration_uuid").value = "";
-        $("ig_integration_status").value = "";
-        $("ig_page_id").value = "";
-        $("ig_account_id").value = "";
-        $("ig_username").value = "";
-        $("ig_name").value = "";
-
-        $("stage").value = "";
-        $("message").value = "";
-        $("provider").value = "";
-        $("token_type").value = "";
-        $("expires_in").value = "";
-
-        $("summaryPageId").textContent = "—";
-        $("summaryInstagramId").textContent = "—";
-      }
-
-      function fillProviderConfigUI(provider, cfg) {
-        const map = PROVIDERS[provider];
-        $(map.stateId).value = cfg?.state || "";
-        $(map.modeId).value = cfg?.mode || "";
-        $(map.dialogUrlId).value = cfg?.dialog_url || "";
-        $(map.bridgeUrlId).value = cfg?.bridge_url || "";
+      function clearInstagramResult() {
+        $("igIntegrationUuid").textContent = "—";
+        $("igIntegrationStatus").textContent = "—";
+        $("igPageId").textContent = "—";
+        $("igAccountId").textContent = "—";
+        $("igUsername").textContent = "—";
+        $("igName").textContent = "—";
       }
 
       function fillFacebookResult(result) {
@@ -850,18 +457,12 @@
         const fb = result?.facebook || {};
         const fbIntegration = integrations.facebook || {};
 
-        const pageId = fb.page_id || fbIntegration.page_id || "";
-
-        $("fb_integration_uuid").value = fbIntegration.uuid || "";
-        $("fb_integration_status").value = fbIntegration.status || "";
-        $("fb_page_id").value = pageId;
-        $("fb_account_id").value = fb.account_id || fbIntegration.account_id || "";
-        $("fb_name").value = fb.name || "";
-        $("fb_business_id").value = fbIntegration.business_id || "";
-
-        if (pageId) {
-          $("summaryPageId").textContent = pageId;
-        }
+        $("fbIntegrationUuid").textContent = fbIntegration.uuid || "—";
+        $("fbIntegrationStatus").textContent = fbIntegration.status || "—";
+        $("fbPageId").textContent = fb.page_id || fbIntegration.page_id || "—";
+        $("fbAccountId").textContent = fb.account_id || fbIntegration.account_id || "—";
+        $("fbName").textContent = fb.name || "—";
+        $("fbBusinessId").textContent = fbIntegration.business_id || "—";
       }
 
       function fillInstagramResult(result) {
@@ -869,215 +470,42 @@
         const ig = result?.instagram || {};
         const igIntegration = integrations.instagram || {};
 
-        const instagramId = ig.account_id || igIntegration.account_id || "";
-
-        $("ig_integration_uuid").value = igIntegration.uuid || "";
-        $("ig_integration_status").value = igIntegration.status || "";
-        $("ig_page_id").value = ig.page_id || igIntegration.page_id || "";
-        $("ig_account_id").value = instagramId;
-        $("ig_username").value = ig.username || "";
-        $("ig_name").value = ig.name || "";
-
-        if (instagramId) {
-          $("summaryInstagramId").textContent = instagramId;
-        }
+        $("igIntegrationUuid").textContent = igIntegration.uuid || "—";
+        $("igIntegrationStatus").textContent = igIntegration.status || "—";
+        $("igPageId").textContent = ig.page_id || igIntegration.page_id || "—";
+        $("igAccountId").textContent = ig.account_id || igIntegration.account_id || "—";
+        $("igUsername").textContent = ig.username || "—";
+        $("igName").textContent = ig.name || "—";
       }
 
-      function fillGeneralResult(result) {
-        $("result_provider").value = result?.provider || "";
-        $("result_state").value = result?.state || "";
-        $("stage").value = result?.stage || "";
-        $("message").value = result?.message || "";
-        $("provider").value = result?.provider || "";
-        $("token_type").value = result?.token_type || "";
-        $("expires_in").value = result?.expires_in ?? "";
-      }
-
-      function fillResultUI(result) {
-        const provider = result?.provider || "";
-
-        fillGeneralResult(result);
-
-        if (provider === "facebook") {
-          fillFacebookResult(result);
-        } else if (provider === "instagram") {
-          fillInstagramResult(result);
-        } else {
-          if (result?.facebook) fillFacebookResult(result);
-          if (result?.instagram) fillInstagramResult(result);
-        }
-
-        const hasFacebook = !!result?.integrations?.facebook?.uuid;
-        const hasInstagram = !!result?.integrations?.instagram?.uuid;
-
-        if (hasFacebook || hasInstagram) {
-          setStatus("✅ Integration created/updated successfully", true);
-        } else if (result?.stage || result?.message) {
-          setStatus("⚠️ The flow completed with warnings", false);
-        }
-      }
-
-      function persistState() {
-        try {
-          localStorage.setItem(
-            LS_KEY,
-            JSON.stringify({
-              configs: state.configs,
-              results: state.results,
-              activeProvider: state.activeProvider,
-              createdAt: Date.now()
-            })
-          );
-        } catch (e) {
-          log("⚠️ Error while persisting localStorage", { error: String(e) });
-        }
-      }
-
-      function loadRuntimeConfigFromContext() {
+      function loadPreloadedConfigs() {
         const ctx = getReviewerContext();
 
-        runtimeConfig.apiBase = ctx?.oauth?.apiBase || "";
-        runtimeConfig.companyToken = ctx?.oauth?.companyToken || "";
-        runtimeConfig.boBearer = ctx?.oauth?.boBearer || "";
-        runtimeConfig.returnTo = ctx?.oauth?.returnTo || "/integrations";
+        state.configs.facebook =
+          ctx?.oauth?.facebookConfig ||
+          ctx?.facebookConfig ||
+          null;
 
-        return ctx;
+        state.configs.instagram =
+          ctx?.oauth?.instagramConfig ||
+          ctx?.instagramConfig ||
+          null;
       }
 
-      function applyReviewerContext() {
-        const ctx = loadRuntimeConfigFromContext();
-
-        const username =
-          ctx?.user?.username ||
-          ctx?.user?.fullName ||
-          "user";
-
-        const companyName =
-          ctx?.user?.companyName ||
-          "company";
-
-        $("reviewSubtitle").textContent =
-          `User: ${username} · Company: ${companyName} · The next step requires official Meta authorization in order to retrieve the identifiers needed to integrate assets into Hi Chat.`;
-
-        $("userContextText").textContent =
-          `${username} is starting the asset linking flow for ${companyName}. Once the OAuth flow is completed, the connected Facebook Page and linked Instagram account will be displayed.`;
-
-        $("summaryUser").textContent = username;
-
-        log("🧾 Reviewer context loaded", {
-          user: ctx?.user || null,
-          oauth: {
-            hasApiBase: !!runtimeConfig.apiBase,
-            hasCompanyToken: !!runtimeConfig.companyToken,
-            hasBearer: !!runtimeConfig.boBearer,
-            hasReturnTo: !!runtimeConfig.returnTo
-          }
-        });
-      }
-
-      function validateRuntimeConfigOrThrow() {
-        if (!runtimeConfig.apiBase) {
-          throw new Error("Missing apiBase in reviewer context");
-        }
-
-        if (!runtimeConfig.companyToken) {
-          throw new Error("Missing companyToken in reviewer context");
-        }
-      }
-
-      async function postConfig(provider) {
-        validateRuntimeConfigOrThrow();
-
-        const providerConfig = PROVIDERS[provider];
-        const apiBase = runtimeConfig.apiBase.trim().replace(/\/$/, "");
-        const url = apiBase + providerConfig.configEndpoint;
-
-        const body = {
-          company_token: runtimeConfig.companyToken,
-          return_to: runtimeConfig.returnTo || "/integrations"
-        };
-
-        const boBearer = runtimeConfig.boBearer?.trim();
-
-        log(`➡️ POST config (${provider})`, {
-          url,
-          body: {
-            company_token: "[hidden]",
-            return_to: body.return_to
-          },
-          hasAuth: !!boBearer
-        });
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(boBearer ? { Authorization: "Bearer " + boBearer } : {})
-          },
-          body: JSON.stringify(body)
-        });
-
-        const txt = await response.text();
-        let json;
-        try {
-          json = txt ? JSON.parse(txt) : null;
-        } catch {
-          json = { raw: txt };
-        }
-
-        if (!response.ok) {
-          throw new Error(`POST config error (${provider}) [${response.status}]: ${JSON.stringify(json)}`);
-        }
-
-        if (!json?.dialog_url || !json?.state) {
-          throw new Error(`The backend did not return dialog_url/state for ${provider}`);
-        }
-
-        return json;
-      }
-
-      async function handleGetConfig(provider) {
-        try {
-          setActiveFlow(provider);
-          setStatus(`Requesting ${provider} configuration…`, null);
-
-          const cfg = await postConfig(provider);
-
-          state.configs[provider] = cfg;
-          fillProviderConfigUI(provider, cfg);
-          setProviderButtonEnabled(provider, true);
-
-          log(`✅ Config received (${provider})`, {
-            provider: cfg?.provider,
-            mode: cfg?.mode,
-            state: cfg?.state
-          });
-
-          setStatus(`✅ ${provider} configuration is ready. You can now open Meta.`, true);
-          persistState();
-        } catch (e) {
-          log(`❌ Error while getting config (${provider})`, { error: String(e) });
-          setStatus(`❌ Error while getting ${provider} configuration`, false);
-          clearProviderConfigUI(provider);
-          setProviderButtonEnabled(provider, false);
-        }
-      }
-
-      function handleOpenProvider(provider) {
+      function openProvider(provider) {
         try {
           const cfg = state.configs[provider];
 
           if (!cfg?.dialog_url) {
-            setStatus(`⚠️ Please get the ${provider} configuration first`, false);
+            setStatus(`${provider} config is not available in preloaded context.`, "error");
             return;
           }
 
           closeActivePopup();
-          setActiveFlow(provider);
 
-          log(`➡️ Opening popup (${provider})`, {
-            state: cfg.state,
+          log(`Opening popup (${provider})`, {
             provider,
+            state: cfg.state,
             dialog_url: cfg.dialog_url,
             bridge_url: cfg.bridge_url
           });
@@ -1089,7 +517,7 @@
           );
 
           if (!pop) {
-            setStatus("⚠️ The popup was blocked by the browser", false);
+            setStatus("Popup was blocked by the browser.", "error");
             return;
           }
 
@@ -1100,48 +528,18 @@
             pop.focus();
           } catch { }
 
-          setStatus(`Waiting for ${provider} authorization…`, null);
+          setStatus(`Waiting for ${provider} authorization...`);
         } catch (e) {
-          log(`❌ Error while opening popup (${provider})`, { error: String(e) });
-          setStatus(`❌ Error while opening ${provider} popup`, false);
-        }
-      }
-
-      function logFriendlyConnectionMessages(result) {
-        const reviewerCtx = getReviewerContext();
-
-        const username =
-          reviewerCtx?.user?.username ||
-          reviewerCtx?.user?.fullName ||
-          "user";
-
-        const facebookPageId =
-          result?.facebook?.page_id ||
-          result?.integrations?.facebook?.page_id ||
-          null;
-
-        const instagramId =
-          result?.instagram?.account_id ||
-          result?.integrations?.instagram?.account_id ||
-          null;
-
-        log(`👋 Welcome ${username}`);
-
-        if (facebookPageId) {
-          log(`✅ Connected Page ID in Hi Chat: ${facebookPageId}`);
-        }
-
-        if (instagramId) {
-          log(`✅ Connected Instagram ID in Hi Chat: ${instagramId}`);
+          log(`Open popup error (${provider})`, { error: String(e) });
+          setStatus(`Could not open ${provider} popup.`, "error");
         }
       }
 
       window.addEventListener("message", (event) => {
         const data = event.data;
-
         if (!data || data.type !== "HICHAT_META_OAUTH_RESULT") return;
 
-        log("📩 postMessage received", {
+        log("postMessage received", {
           origin: event.origin,
           data
         });
@@ -1149,49 +547,35 @@
         closeActivePopup();
 
         if (!data.ok) {
-          setStatus("❌ OAuth failed", false);
-          $("stage").value = data.stage || "unknown";
-          $("message").value = data.message || "OAuth flow failed";
-          $("provider").value = data.provider || "";
-          $("result_provider").value = data.provider || "";
+          setStatus(data.message || "OAuth failed.", "error");
           return;
         }
 
         const result = data.result || {};
         const provider = result.provider || data.provider || null;
 
-        fillGeneralResult(result);
-
         if (provider === "facebook") {
           state.results.facebook = result;
           fillFacebookResult(result);
-        } else if (provider === "instagram") {
-          state.results.instagram = result;
-          fillInstagramResult(result);
-        } else {
-          fillResultUI(result);
         }
 
-        if (provider) {
-          $("result_provider").value = provider;
-          $("result_state").value = result?.state || "";
-          setActiveFlow(provider);
+        if (provider === "instagram") {
+          state.results.instagram = result;
+          fillInstagramResult(result);
         }
 
         if (result?.integrations?.facebook?.uuid || result?.integrations?.instagram?.uuid) {
-          setStatus("✅ Integration created/updated successfully", true);
+          setStatus("Facebook/Instagram connected successfully with Hi Chat Assistant. Go to them to test how it responds.", "success");
         } else {
-          setStatus("⚠️ The flow completed with warnings", false);
+          setStatus(`${provider} flow completed with warnings.`, "error");
         }
 
-        logFriendlyConnectionMessages(result);
+        log(`Flow finished (${provider})`, result);
         persistState();
       });
 
-      $("btnGetFacebookConfig").addEventListener("click", () => handleGetConfig("facebook"));
-      $("btnGetInstagramConfig").addEventListener("click", () => handleGetConfig("instagram"));
-      $("btnOpenFacebook").addEventListener("click", () => handleOpenProvider("facebook"));
-      $("btnOpenInstagram").addEventListener("click", () => handleOpenProvider("instagram"));
+      $("btnOpenFacebook").addEventListener("click", () => openProvider("facebook"));
+      $("btnOpenInstagram").addEventListener("click", () => openProvider("instagram"));
 
       $("btnClear").addEventListener("click", () => {
         closeActivePopup();
@@ -1201,80 +585,60 @@
         state.configs.instagram = null;
         state.results.facebook = null;
         state.results.instagram = null;
-        state.activeProvider = null;
 
-        clearAllConfigsUI();
-        clearResultUI();
-        setProviderButtonEnabled("facebook", false);
-        setProviderButtonEnabled("instagram", false);
-        setActiveFlow(null);
-        setStatus("🧹 Local state cleared", null);
-        log("🧹 local reviewer state cleared");
+        setProviderReady("facebook", false, "Not ready");
+        setProviderReady("instagram", false, "Not ready");
+
+        clearFacebookResult();
+        clearInstagramResult();
+
+        $("log").textContent = "";
+        setStatus("Local state cleared.");
       });
 
       try {
-        applyReviewerContext();
-        clearResultUI();
+        clearFacebookResult();
+        clearInstagramResult();
+
+        setProviderReady("facebook", false, "Not ready");
+        setProviderReady("instagram", false, "Not ready");
+
+        loadPreloadedConfigs();
 
         const raw = localStorage.getItem(LS_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
 
-          state.configs.facebook = parsed?.configs?.facebook || null;
-          state.configs.instagram = parsed?.configs?.instagram || null;
           state.results.facebook = parsed?.results?.facebook || null;
           state.results.instagram = parsed?.results?.instagram || null;
-          state.activeProvider = parsed?.activeProvider || null;
-
-          if (state.configs.facebook?.dialog_url) {
-            fillProviderConfigUI("facebook", state.configs.facebook);
-            setProviderButtonEnabled("facebook", true);
-            log("🔁 Facebook config restored from localStorage", {
-              state: state.configs.facebook?.state,
-              provider: state.configs.facebook?.provider
-            });
-          }
-
-          if (state.configs.instagram?.dialog_url) {
-            fillProviderConfigUI("instagram", state.configs.instagram);
-            setProviderButtonEnabled("instagram", true);
-            log("🔁 Instagram config restored from localStorage", {
-              state: state.configs.instagram?.state,
-              provider: state.configs.instagram?.provider
-            });
-          }
 
           if (state.results.facebook) {
             fillFacebookResult(state.results.facebook);
-            fillGeneralResult(state.results.facebook);
-            log("🔁 Facebook result restored from localStorage", {
-              provider: state.results.facebook?.provider,
-              stage: state.results.facebook?.stage
-            });
           }
 
           if (state.results.instagram) {
             fillInstagramResult(state.results.instagram);
-            fillGeneralResult(state.results.instagram);
-            log("🔁 Instagram result restored from localStorage", {
-              provider: state.results.instagram?.provider,
-              stage: state.results.instagram?.stage
-            });
           }
+        }
 
-          setActiveFlow(state.activeProvider);
+        if (state.configs.facebook?.dialog_url) {
+          setProviderReady("facebook", true, "Ready");
+          log("Facebook config loaded from pre");
+        }
 
-          if (state.configs.facebook?.dialog_url || state.configs.instagram?.dialog_url) {
-            setStatus("✅ Configuration restored from local state", true);
-          } else {
-            setStatus("Waiting for user interaction.", null);
-          }
+        if (state.configs.instagram?.dialog_url) {
+          setProviderReady("instagram", true, "Ready");
+          log("Instagram config loaded from pre");
+        }
+
+        if (state.configs.facebook?.dialog_url || state.configs.instagram?.dialog_url) {
+          setStatus("Preloaded config detected.", "success");
         } else {
-          setStatus("Waiting for user interaction.", null);
+          setStatus("No preloaded config detected.", "error");
         }
       } catch (e) {
-        log("⚠️ Error while reading local state", { error: String(e) });
-        setStatus("⚠️ Previous state could not be restored", false);
+        log("Init error", { error: String(e) });
+        setStatus("Initialization failed.", "error");
       }
     })();
   </script>
